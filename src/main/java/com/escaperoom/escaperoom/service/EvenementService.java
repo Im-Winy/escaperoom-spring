@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.escaperoom.escaperoom.entity.Difficulte;
 import com.escaperoom.escaperoom.entity.Evenement;
 import com.escaperoom.escaperoom.repository.IEvenementRepository;
 
@@ -31,20 +32,20 @@ public class EvenementService {
 	}
 
 	// Supprime un évènement
-	public void deleteUser(Evenement evenement) {
+	public void deleteEvenement(Evenement evenement) {
 		evenementRepository.delete(evenement);
 	}
 
 	// Met à jour un évènement
 	public Evenement updateEvenement(Long idEvenement, Evenement evenement) {
 		Evenement event = evenementRepository.findById(idEvenement).get();
-		event.setNom(event.getNom());
-		event.setDescription(event.getDescription());
-		event.setImage(event.getImage());
-		event.setDuree(event.getDuree());
-		event.setNbeJoueurMax(event.getNbeJoueurMax());
-		event.setPrix(event.getPrix());
-		event.setDifficulte(event.getDifficulte());
+		event.setNom(evenement.getNom());
+		event.setDescription(evenement.getDescription());
+		event.setImage(evenement.getImage());
+		event.setDuree(evenement.getDuree());
+		event.setNbeJoueurMax(evenement.getNbeJoueurMax());
+		event.setPrix(evenement.getPrix());
+		event.setDifficulte(evenement.getDifficulte());
 		return evenementRepository.save(event);
 	}
 
