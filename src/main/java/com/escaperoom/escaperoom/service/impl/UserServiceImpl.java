@@ -27,8 +27,8 @@ import com.escaperoom.escaperoom.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import static com.parkauto.rest.constant.UserImplConstant.*;
-import static com.parkauto.rest.constant.FileConstant.*;
+import static com.escaperoom.escaperoom.constant.UserImplConstant.*;
+import static com.escaperoom.escaperoom.constant.FileConstant.*;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -258,11 +258,25 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 		
 		userRepository.save(user);
 		
-		LOGGER.info("Votre mode de passe "+password);
+		LOGGER.info("Votre mode de passe "+ password);
 		
 		emailService.sendConfirmRegister(email, prenom, password);
 		
 		return user;
+	}
+	
+	@Override
+	public User updateUser(long idUser, String prenom, String nom, String username, String email, String role) {
+		User user = userRepository.findById(idUser).get();
+		user.setPrenom(prenom);
+		user.setNom(nom);
+		user.setUsername(username);
+		user.setEmail(email);
+		
+		// Convertir la chaîne en Enum
+	    user.setRole(Role.valueOf(role.toUpperCase()));
+		
+		return userRepository.save(user);
 	}
 
 	// Supprime un utilisateur par son identifiant

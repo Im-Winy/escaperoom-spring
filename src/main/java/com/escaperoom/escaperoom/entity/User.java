@@ -51,9 +51,6 @@ public class User implements UserDetails {
 	@Column(name="EMAIL")
 	private String email;
 	
-	@Column(name="TELEPHONE")
-	private String telephone;
-	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference(value = "user-reservation")
 	private List<Reservation> reservation = new ArrayList<>();
@@ -159,14 +156,6 @@ public class User implements UserDetails {
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public String getTelephone() {
-		return telephone;
-	}
-
-	public void setTelephone(String telephone) {
-		this.telephone = telephone;
 	}
 
 	public List<Reservation> getReservation() {

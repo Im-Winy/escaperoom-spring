@@ -40,7 +40,6 @@ public class EvenementService {
 		Evenement event = evenementRepository.findById(idEvenement).get();
 		event.setNom(event.getNom());
 		event.setDescription(event.getDescription());
-		event.setNom(event.getNom());
 		event.setImage(event.getImage());
 		event.setDuree(event.getDuree());
 		event.setNbeJoueurMax(event.getNbeJoueurMax());

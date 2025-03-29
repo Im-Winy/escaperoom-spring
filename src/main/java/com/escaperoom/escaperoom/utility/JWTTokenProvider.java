@@ -35,7 +35,7 @@ public class JWTTokenProvider {
 	
 	public String generateJwtToken(User user) {
 		String[] claims = getClaimsFromUser(user);
-		return JWT.create().withIssuer(GET_PARKAUTO_ARRAYS).withAudience(GET_ADMINISTRATION_ARRAYS).withIssuedAt( new Date()).withSubject(user.getUsername()).withArrayClaim(AUTHORITIES, claims).withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME)).sign(HMAC512(secret.getBytes()));
+		return JWT.create().withIssuer(GET_ESCAPEROOM_ARRAYS).withAudience(GET_ADMINISTRATION_ARRAYS).withIssuedAt( new Date()).withSubject(user.getUsername()).withArrayClaim(AUTHORITIES, claims).withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME)).sign(HMAC512(secret.getBytes()));
 	}
 
 	private String[] getClaimsFromUser(User user) {
@@ -90,7 +90,7 @@ public class JWTTokenProvider {
 		JWTVerifier verifier;
 		try {
 			Algorithm algorithm = HMAC512(secret);
-			verifier = JWT.require(algorithm).withIssuer(GET_PARKAUTO_ARRAYS).build();
+			verifier = JWT.require(algorithm).withIssuer(GET_ESCAPEROOM_ARRAYS).build();
 			
 		} catch (JWTVerificationException e) {
 			throw new JWTVerificationException(TOKEN_CANNOT_BE_VERIFIED);

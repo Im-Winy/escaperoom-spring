@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.escaperoom.escaperoom.constant.SecurityConstant;
@@ -79,7 +81,7 @@ public class UserController extends ExceptionHandling{
 		return headers;
 	}
 
-	private void   authenticate(String username, String password) {
+	private void authenticate(String username, String password) {
 		
 		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 		
@@ -109,6 +111,18 @@ public class UserController extends ExceptionHandling{
 		return new ResponseEntity<>(newUser,HttpStatus.OK);
 		
 	}
+	
+	@PutMapping("update/{id}")
+    public ResponseEntity<User> updateUser(
+            @PathVariable("id") long idUser,
+            @RequestPart("prenom") String prenom,
+            @RequestPart("nom") String nom,
+            @RequestPart("username") String username,
+            @RequestPart("email") String email,
+            @RequestPart("role") String role){
+        User updatedUser = userService.updateUser(idUser, prenom, nom, username, email, role);
+        return ResponseEntity.ok(updatedUser);
+    }
 	
 	@DeleteMapping("delete/{id}")
 	public ResponseEntity<HttpResponse>deleteUser(@PathVariable("id") long id){

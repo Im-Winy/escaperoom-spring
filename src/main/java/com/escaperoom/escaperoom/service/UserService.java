@@ -16,5 +16,8 @@ public interface UserService {
     
     User addNewUser(String prenom, String nom, String username, String password, String email, String role,
             boolean parseBoolean, boolean parseBoolean2);
+    
+    User updateUser(long idUser, String prenom, String nom, String username, String email, String role);
+    
     void deleteUser(long id);
 }

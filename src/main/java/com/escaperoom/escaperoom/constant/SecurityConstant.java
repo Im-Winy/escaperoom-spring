@@ -6,7 +6,7 @@ public class SecurityConstant {
 	public static final String TOKEN_PREFIX = "Bearer ";
 	public static final String JWT_TOKEN_HEADER = "Jwt-Token";
 	public static final String TOKEN_CANNOT_BE_VERIFIED = "Token cannot be verified";
-	public static final String GET_PARKAUTO_ARRAYS = "Get ParkAuto Company";
+	public static final String GET_ESCAPEROOM_ARRAYS = "Get Escaperoom Company";
 	public static final String GET_ADMINISTRATION_ARRAYS = "User Management Dashboard";
 	public static final String AUTHORITIES = "authorities";
 	public static final String FORBIDDEN_MESSAGE = "You need to log in to access this page";
