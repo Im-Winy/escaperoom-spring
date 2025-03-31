@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import com.escaperoom.escaperoom.entity.User;
 import com.escaperoom.escaperoom.entity.Role;
+import java.util.List;
+
 
 @Repository
 public interface IUserRepository extends JpaRepository<User, Long> {
@@ -12,4 +14,5 @@ public interface IUserRepository extends JpaRepository<User, Long> {
 	User findUserByEmail(String email);
 	User findByRole(Role role);
 	User findUserByUsername(String username);
+	User findById(String id);
 }

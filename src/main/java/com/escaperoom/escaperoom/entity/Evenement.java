@@ -55,6 +55,7 @@ public class Evenement {
 		super();
 	}
 
+	// Constructeur avec tous les paramètres
 	public Evenement(Long idEvenement, String nom, String description, String image, int duree, int nbeJoueurMax,
 			int prix, Difficulte difficulte, List<Reservation> reservation) {
 		super();
@@ -67,6 +68,19 @@ public class Evenement {
 		this.prix = prix;
 		this.difficulte = difficulte;
 		this.reservation = reservation;
+	}
+	
+	// Constructeur (sans ID et réservations)
+	public Evenement(String nom, String description, String image, int duree, int nbeJoueurMax,
+			int prix, Difficulte difficulte) {
+		super();
+		this.nom = nom;
+		this.description = description;
+		this.image = image;
+		this.duree = duree;
+		this.nbeJoueurMax = nbeJoueurMax;
+		this.prix = prix;
+		this.difficulte = difficulte;
 	}
 
 	public Long getIdEvenement() {

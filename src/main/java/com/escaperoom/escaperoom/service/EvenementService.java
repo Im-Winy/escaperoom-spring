@@ -20,6 +20,20 @@ public class EvenementService {
 	public Evenement saveEvenement(Evenement evenement) {
 		return evenementRepository.save(evenement);
 	}
+	
+	public Evenement saveEvenement(String nom, String description, String image, int duree, int nbeJoueurMax, int prix, String difficulte) {
+		
+		Evenement evenement = new Evenement();
+		evenement.setNom(nom);
+		evenement.setNom(description);
+		evenement.setImage(image);
+		evenement.setDuree(duree);
+		evenement.setNbeJoueurMax(nbeJoueurMax);
+		evenement.setPrix(prix);
+		evenement.setDifficulte(Difficulte.valueOf(difficulte.toUpperCase()));
+		
+		return evenementRepository.save(evenement);
+	}
 
 	// Récupère un seul évènement par son id
 	public Evenement getEvenementById(Long idEvenement) {

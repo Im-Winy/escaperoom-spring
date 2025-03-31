@@ -112,6 +112,17 @@ public class UserController extends ExceptionHandling{
 		
 	}
 	
+	// Endpoint pour récupérer un utilisateur par son faux ID
+    @GetMapping("user/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable String id) {
+        try {
+            User user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+	
 	@PutMapping("update/{id}")
     public ResponseEntity<User> updateUser(
             @PathVariable("id") long idUser,

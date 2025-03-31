@@ -33,6 +33,7 @@ import static com.escaperoom.escaperoom.constant.FileConstant.*;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import lombok.RequiredArgsConstructor;
@@ -278,6 +279,12 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 		
 		return userRepository.save(user);
 	}
+	
+	// Recherche un utilisateur par son ID
+	@Override
+    public User getUserById(String userId) {
+        return userRepository.findById(userId);        
+    }
 
 	// Supprime un utilisateur par son identifiant
 	@Override
