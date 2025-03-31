@@ -37,20 +37,26 @@ public class EvenementService {
 	}
 
 	// Met à jour un évènement
-	public Evenement updateEvenement(Long idEvenement, Evenement evenement) {
+	public Evenement updateEvenement(Long idEvenement, String nom, String description, String image, int duree, int nbeJoueurMax, int prix, String difficulte) {
 		Evenement event = evenementRepository.findById(idEvenement).get();
-		event.setNom(evenement.getNom());
-		event.setDescription(evenement.getDescription());
-		event.setImage(evenement.getImage());
-		event.setDuree(evenement.getDuree());
-		event.setNbeJoueurMax(evenement.getNbeJoueurMax());
-		event.setPrix(evenement.getPrix());
-		event.setDifficulte(evenement.getDifficulte());
+		event.setNom(nom);
+		event.setDescription(description);
+		event.setImage(image);
+		event.setDuree(duree);
+		event.setNbeJoueurMax(nbeJoueurMax);
+		event.setPrix(prix);
+		event.setDifficulte(Difficulte.valueOf(difficulte.toUpperCase()));
+		 
 		return evenementRepository.save(event);
 	}
 
 	// Show one
 	public Optional<Evenement> findById(Long id) {
 		return evenementRepository.findById(id);
+	}
+
+	// Supprime un évènement par son identifiant
+	public void deleteEvenement(Long id) {
+		evenementRepository.deleteById(id);
 	}
 }
