@@ -33,7 +33,7 @@ public class ReservationController {
 	ReservationService reservationService;
 	
 	//Enregistre une réservation
-	@PostMapping("/reserver/{idUser}/{idEvenement}")
+	@PostMapping("/reserver/user/{idUser}/evenement/{idEvenement}")
     public ResponseEntity<String> reserverEvenement(
     		@PathVariable Long idUser,
     		@PathVariable Long idEvenement,

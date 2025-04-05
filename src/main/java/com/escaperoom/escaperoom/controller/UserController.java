@@ -36,111 +36,87 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/auth/")
 @RequiredArgsConstructor
 @CrossOrigin("*")
-public class UserController extends ExceptionHandling{
-	 @Autowired
-	 UserService userService;
-	 @Autowired
-	  AuthenticationManager authenticationManager;
-	 @Autowired
-	  JWTTokenProvider jwtTokenProvider;
-	
-	 @PostMapping("login")
-		public ResponseEntity<User> login(@RequestBody User user) {
-		   authenticate(user.getUsername(), user.getPassword());			
-			User loginUser = userService.findUserByUsername(user.getUsername());
-			User userPrincipal = new User();
-			userPrincipal = loginUser;
-			HttpHeaders jwtHeaders = getJwtHeader(userPrincipal);
-		
-			return new ResponseEntity<>(loginUser,jwtHeaders, HttpStatus.OK);
-			
-		
-		}
-			
-	
+public class UserController extends ExceptionHandling {
+	@Autowired
+	UserService userService;
+	@Autowired
+	AuthenticationManager authenticationManager;
+	@Autowired
+	JWTTokenProvider jwtTokenProvider;
+
+	@PostMapping("login")
+	public ResponseEntity<User> login(@RequestBody User user) {
+		authenticate(user.getUsername(), user.getPassword());
+		User loginUser = userService.findUserByUsername(user.getUsername());
+		User userPrincipal = new User();
+		userPrincipal = loginUser;
+		HttpHeaders jwtHeaders = getJwtHeader(userPrincipal);
+
+		return new ResponseEntity<>(loginUser, jwtHeaders, HttpStatus.OK);
+	}
 
 	@PostMapping("register")
-	public ResponseEntity<User> register(@RequestBody User user) throws UsernameExistException, EmailExistException{
-		
+	public ResponseEntity<User> register(@RequestBody User user) throws UsernameExistException, EmailExistException {
+
 		User newUser = userService.register(user.getPrenom(), user.getNom(), user.getUsername(), user.getEmail());
-		if(newUser!=null) {
+		if (newUser != null) {
 			return new ResponseEntity<>(newUser, HttpStatus.OK);
 		} else {
-			
-				throw new UsernameExistException(UserImplConstant.USERNAME_ALREADY_EXIST);
-	
+			throw new UsernameExistException(UserImplConstant.USERNAME_ALREADY_EXIST);
+		}
 	}
-				
-		
-	}
-	
+
 	private HttpHeaders getJwtHeader(User loginUser) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(SecurityConstant.JWT_TOKEN_HEADER, jwtTokenProvider.generateJwtToken(loginUser));
-		
 		return headers;
 	}
 
 	private void authenticate(String username, String password) {
-		
 		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-		
 	}
-	
-	@GetMapping("list")	
-	public ResponseEntity<List<User>>getAllUsers() {
+
+	@GetMapping("list")
+	public ResponseEntity<List<User>> getAllUsers() {
 		List<User> user = userService.getUsers();
-		return new ResponseEntity< >(user,HttpStatus.OK);
-		
+		return new ResponseEntity<>(user, HttpStatus.OK);
 	}
-	
+
 	@PostMapping("add")
-	public ResponseEntity<User> addNewUser(
-			@RequestParam("prenom") String prenom,
-			@RequestParam("nom") String nom,
-			@RequestParam("username") String username,
-			@RequestParam("password") String password,
-			@RequestParam("email") String email,
-			@RequestParam("role") String role,
-			@RequestParam("active") String active,
-			@RequestParam("isNotLocked") String isNotLocked		
-			
-			){
-		
-		User newUser = userService.addNewUser(prenom, nom,username,password,email,role,Boolean.parseBoolean(active), Boolean.parseBoolean(isNotLocked));
-		return new ResponseEntity<>(newUser,HttpStatus.OK);
-		
+	public ResponseEntity<User> addNewUser(@RequestParam("prenom") String prenom, @RequestParam("nom") String nom,
+			@RequestParam("username") String username, @RequestParam("password") String password,
+			@RequestParam("email") String email, @RequestParam("role") String role,
+			@RequestParam("active") String active, @RequestParam("isNotLocked") String isNotLocked) {
+		User newUser = userService.addNewUser(prenom, nom, username, password, email, role,
+				Boolean.parseBoolean(active), Boolean.parseBoolean(isNotLocked));
+		return new ResponseEntity<>(newUser, HttpStatus.OK);
+	}
+
+	@PutMapping("update/{id}")
+	public ResponseEntity<User> updateUser(@PathVariable("id") long idUser, 
+			@RequestPart("prenom") String prenom,
+			@RequestPart("nom") String nom, 
+			@RequestPart("username") String username,
+			@RequestPart("email") String email, 
+			@RequestPart("role") String role) {
+		User updatedUser = userService.updateUser(idUser, prenom, nom, username, email, role);
+		return ResponseEntity.ok(updatedUser);
 	}
 	
-	// Endpoint pour récupérer un utilisateur par son faux ID
-    @GetMapping("user/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable String id) {
-        try {
-            User user = userService.getUserById(id);
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-	
-	@PutMapping("update/{id}")
-    public ResponseEntity<User> updateUser(
-            @PathVariable("id") long idUser,
-            @RequestPart("prenom") String prenom,
-            @RequestPart("nom") String nom,
-            @RequestPart("username") String username,
-            @RequestPart("email") String email,
-            @RequestPart("role") String role){
-        User updatedUser = userService.updateUser(idUser, prenom, nom, username, email, role);
-        return ResponseEntity.ok(updatedUser);
-    }
-	
+	@PutMapping("user/{id}")
+	public ResponseEntity<User> updateOneUser(@PathVariable("id") long idUser, 
+			@RequestPart("prenom") String prenom,
+			@RequestPart("nom") String nom, 
+			@RequestPart("username") String username,
+			@RequestPart("email") String email) {
+		User updatedUser = userService.updateOneUser(idUser, prenom, nom, username, email);
+		return ResponseEntity.ok(updatedUser);
+	}
+
 	@DeleteMapping("delete/{id}")
-	public ResponseEntity<HttpResponse>deleteUser(@PathVariable("id") long id){
-		
+	public ResponseEntity<HttpResponse> deleteUser(@PathVariable("id") long id) {
 		userService.deleteUser(id);
 		return new ResponseEntity<>(HttpStatus.OK);
-		
 	}
 
 }

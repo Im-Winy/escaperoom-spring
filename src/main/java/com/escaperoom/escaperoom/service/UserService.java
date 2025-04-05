@@ -19,7 +19,8 @@ public interface UserService {
     
     User updateUser(long idUser, String prenom, String nom, String username, String email, String role);
     
-    void deleteUser(long id);
+    User updateOneUser(long idUser, String prenom, String nom, String username, String email);
     
-    User getUserById(String userId);
+    void deleteUser(long id);
+
 }

@@ -266,6 +266,7 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 		return user;
 	}
 	
+	// Met à jour un utilisateur (en tant que ADMIN)
 	@Override
 	public User updateUser(long idUser, String prenom, String nom, String username, String email, String role) {
 		User user = userRepository.findById(idUser).get();
@@ -273,18 +274,22 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 		user.setNom(nom);
 		user.setUsername(username);
 		user.setEmail(email);
-		
-		// Convertir la chaîne en Enum
-	    user.setRole(Role.valueOf(role.toUpperCase()));
+	    user.setRole(Role.valueOf(role.toUpperCase()));// Convertir la chaîne en Enum
 		
 		return userRepository.save(user);
 	}
 	
-	// Recherche un utilisateur par son ID
+	// Met à jour un utilisateur (en tant que USER)
 	@Override
-    public User getUserById(String userId) {
-        return userRepository.findById(userId);        
-    }
+	public User updateOneUser(long idUser, String prenom, String nom, String username, String email) {
+		User user = userRepository.findById(idUser).get();
+		user.setPrenom(prenom);
+		user.setNom(nom);
+		user.setUsername(username);
+		user.setEmail(email);
+		
+		return userRepository.save(user);
+	}
 
 	// Supprime un utilisateur par son identifiant
 	@Override
