@@ -1,8 +1,8 @@
 package com.escaperoom.escaperoom.controller;
 
-import java.time.Duration;
-import java.time.LocalTime;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,14 +14,16 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.escaperoom.escaperoom.entity.Evenement;
 import com.escaperoom.escaperoom.entity.Reservation;
+import com.escaperoom.escaperoom.entity.TimeSlot;
 import com.escaperoom.escaperoom.entity.User;
+import com.escaperoom.escaperoom.repository.ITimeSlotRepository;
 import com.escaperoom.escaperoom.service.ReservationService;
 
 @RestController
@@ -31,66 +33,69 @@ public class ReservationController {
 
 	@Autowired
 	ReservationService reservationService;
-	
-	//Enregistre une réservation
-	@PostMapping("/reserver/user/{idUser}/evenement/{idEvenement}")
-    public ResponseEntity<String> reserverEvenement(
-    		@PathVariable Long idUser,
-    		@PathVariable Long idEvenement,
-    		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime heureDebut,
-    		@RequestParam Duration duree) {
 
-        String message = reservationService.reserverEvenement(idUser, idEvenement, heureDebut, duree);
+	@Autowired
+	ITimeSlotRepository timeSlotRepository;
 
-        if (message.contains("Réservation réussie !")) {
-            return ResponseEntity.ok(message);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+	// Réserve un créneau pour un utilisateur donné et un événement donné
+    @PostMapping("/reservation/{idUser}/{idEvenement}")
+    public ResponseEntity<?> reserve(
+    		@PathVariable Long idUser,    
+    		@PathVariable Long idEvenement, 
+            @RequestParam Long timeSlotId) {
+        try {
+            // Appel du service pour effectuer la réservation
+            Reservation reservation = reservationService.reserve(timeSlotId, idUser, idEvenement);
+            return ResponseEntity.ok(reservation);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-	
-	//Met à jour une réservation
-	@PutMapping("/mis-a-jour/{idReservation}")
-    public ResponseEntity<String> mettreAJourReservation(
-            @PathVariable Long idReservation,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime heureDebut,
-            @RequestParam Duration duree) {
+
+    @GetMapping("/evenement/{evenementId}/timeslots")
+    public ResponseEntity<List<TimeSlot>> getAvailableTimeSlots(
+            @PathVariable Long evenementId,
+            @RequestParam String selectedDate) {
+
+        // Convertir la chaîne en LocalDate
+        LocalDate date = LocalDate.parse(selectedDate);
         
-        String resultat = reservationService.mettreAJourReservation(idReservation, heureDebut, duree);
-        
-        if (resultat.startsWith("Mise à jour réussie")) {
-            return ResponseEntity.ok(resultat);
-        } else {
-            return ResponseEntity.badRequest().body(resultat);
+        try {
+            List<TimeSlot> timeSlots = reservationService.getTimeSlotsNonReservesPourEvenement(evenementId, date);
+            if (timeSlots.isEmpty()) {
+                return ResponseEntity.noContent().build(); // Aucun créneau disponible
+            }
+            return ResponseEntity.ok(timeSlots); // Renvoie les créneaux horaires disponibles
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Événement introuvable
         }
     }
-	
-	//Récupère toutes les réservations
-	@GetMapping("/reservations")
-	public List<Reservation> getAllUsers(@Validated @RequestBody(required = false) User user){
-		return reservationService.getReservation();	
+     
+	// Générer les créneaux pour une seule journée
+	@PostMapping("/generer-creneaux-journee")
+	public ResponseEntity<?> generateSlotsForDay(
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+		List<TimeSlot> slots = reservationService.generateTimeSlotsForDay(date);
+		return ResponseEntity.ok(slots);
 	}
-	
-	//Récupère toutes les réservations d'un utilisateur
-	@GetMapping("reservations/utilisateurs/{idUser}")
-    public ResponseEntity<List<Reservation>> getReservationsByUser(@PathVariable int idUser) {
-        List<Reservation> reservation = reservationService.getReservationsByUserId(idUser);
-        if (reservation == null || reservation.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity<>(reservation, HttpStatus.OK);
-        }
-    }
-    
-    //Supprime une réservation
-    @DeleteMapping("/reservations/{id}")
-	public ResponseEntity<Reservation> deleteUser(@PathVariable(name="id") Long idReservation){			
+
+	// Récupère toutes les réservations
+	@GetMapping("/reservations")
+	public List<Reservation> getAllUsers(@Validated @RequestBody(required = false) User user) {
+		return reservationService.getReservation();
+	}
+
+	// Supprime une réservation
+	@DeleteMapping("/reservations/{id}")
+	public ResponseEntity<Reservation> deleteUser(@PathVariable(name = "id") Long idReservation) {
 		Reservation reservation = reservationService.getReservationById(idReservation);
-		if(reservation == null) {
-			return ResponseEntity.notFound().build();			
+		if (reservation == null) {
+			return ResponseEntity.notFound().build();
 		}
 		reservationService.deleteReservation(reservation);
 		return ResponseEntity.ok().body(reservation);
 	}
-	
+
 }

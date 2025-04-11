@@ -1,24 +1,29 @@
 package com.escaperoom.escaperoom.service;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.escaperoom.escaperoom.entity.Evenement;
 import com.escaperoom.escaperoom.entity.Reservation;
-import com.escaperoom.escaperoom.entity.Statut;
+import com.escaperoom.escaperoom.entity.TimeSlot;
 import com.escaperoom.escaperoom.entity.User;
 import com.escaperoom.escaperoom.repository.IEvenementRepository;
 import com.escaperoom.escaperoom.repository.IReservationRepository;
+import com.escaperoom.escaperoom.repository.ITimeSlotRepository;
 import com.escaperoom.escaperoom.repository.IUserRepository;
 
 @Service
 public class ReservationService {
 
+	// Injection des dépendances des repositories nécessaires
 	@Autowired
 	IReservationRepository reservationRepository;
 
@@ -26,118 +31,88 @@ public class ReservationService {
 	IUserRepository userRepository;
 
 	@Autowired
+	ITimeSlotRepository timeSlotRepository;
+
+	@Autowired
 	IEvenementRepository evenementRepository;
 
-	// Enregistrer une réservation
-	public String reserverEvenement(Long idUser, Long idEvenement, LocalTime heureDebut, Duration duree) {
+	public Reservation reserve(Long timeSlotId, Long idUser, Long idEvenement) {
 
-		// 1°) Vérification de la validité de l'heure de début et de la durée
-		if (heureDebut == null || duree == null || duree.isNegative() || duree.isZero()) {
-			return "Heure de début ou durée invalide";
-		}
+	    // Vérifie si le créneau existe
+	    TimeSlot timeSlot = timeSlotRepository.findById(timeSlotId)
+	            .orElseThrow(() -> new IllegalStateException("Ce créneau n'existe pas."));
 
-		// 2°) Recherche de l'utilisateur et de l'événement
-		User utilisateur = userRepository.findById(idUser)
-				.orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+	    // Récupération de l'utilisateur
+	    User utilisateur = userRepository.findById(idUser)
+	            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-		Evenement evenement = evenementRepository.findById(idEvenement)
-				.orElseThrow(() -> new RuntimeException("Événement introuvable"));
+	    // Récupération de l'événement
+	    Evenement evenement = evenementRepository.findById(idEvenement)
+	            .orElseThrow(() -> new RuntimeException("Événement introuvable"));
 
-		// 3°) Vérifier si un autre utilisateur a déjà réservé cet événement au même
-		// horaire
-		boolean autreUtilisateurReserve = reservationRepository.existsByEvenementAndHeureDebutAndUserNot(evenement,
-				heureDebut, utilisateur);
+	    // Vérifie si le créneau est déjà réservé pour cet événement
+	    Optional<Reservation> existingReservation = reservationRepository.findByTimeSlotAndEvenement(timeSlot, evenement);
 
-		if (autreUtilisateurReserve) {
-			return "Un autre utilisateur a déjà réservé cet événement à cet horaire.";
-		}
+	    if (existingReservation.isPresent()) {
+	        throw new IllegalStateException("Ce créneau est déjà réservé pour cet événement.");
+	    }
 
-		// 4°) Vérifier le nombre de réservations de cet utilisateur pour cet événement
-		// et cette heure
-		long count = reservationRepository.countByUserAndEvenementAndHeureDebut(utilisateur, evenement, heureDebut);
+	    // Si le créneau n'est pas réservé pour cet événement, on peut procéder à la réservation
 
-		if (count >= 3) {
-			return "L'utilisateur ne peut pas réserver plus de 3 fois cet événement à cette heure.";
-		}
+	    // Création de la réservation pour l'événement et l'utilisateur
+	    Reservation reservation = new Reservation();
+	    reservation.setUser(utilisateur);
+	    reservation.setEvenement(evenement);
+	    reservation.setTimeSlot(timeSlot);
+	    reservation.setDateReservation(LocalDateTime.now());
 
-		// 5°) Calcul de l'heure de fin de la réservation
-		LocalTime heureFin = heureDebut.plus(duree);
-
-		// 6°) Création de la nouvelle réservation
-		Reservation reserv = new Reservation();
-		reserv.setUser(utilisateur);
-		reserv.setEvenement(evenement);
-		reserv.setHeureDebut(heureDebut);
-		reserv.setHeureFin(heureFin);
-		reserv.setDuree(duree);
-		reserv.setStatut(Statut.réservé);
-		reserv.setDateReservation(LocalDateTime.now());
-
-		// 7°) Sauvegarde de la réservation dans la base de données
-		reservationRepository.save(reserv);
-
-		// 8°) Retour de la réponse de succès
-		return "Réservation réussie ! " + "Événement : " + evenement.getNom() + ", " + "Utilisateur : " + idUser + ", "
-				+ "Heure de début : " + heureDebut + ", " + "Durée : " + duree.toMinutes() + " minutes.";
+	    // Sauvegarde de la réservation
+	    return reservationRepository.save(reservation);
 	}
 
-	// Mise à jour de la réservation
-	public String mettreAJourReservation(Long idReservation, LocalTime heureDebut, Duration duree) {
-		// 1°) Vérification de la validité de l'heure de début et de la durée
-		if (heureDebut == null || duree == null || duree.isNegative() || duree.isZero()) {
-			return "Heure de début ou durée invalide";
+
+	// Génère les créneaux horaires d'une journée donnée
+	public List<TimeSlot> generateTimeSlotsForDay(LocalDate date) {
+		LocalTime start = LocalTime.of(10, 0); // Heure d'ouverture
+		LocalTime end = LocalTime.of(22, 0); // Heure de fermeture
+		Duration duration = Duration.ofMinutes(60); // Durée d'un créneau
+
+		List<TimeSlot> slots = new ArrayList<>();
+
+		// Boucle pour générer des créneaux de 90 minutes jusqu'à la fin de la journée
+		while (start.plus(duration).isBefore(end.plusSeconds(1))) {
+			TimeSlot slot = new TimeSlot();
+			slot.setDate(date);
+			slot.setStartTime(start);
+			slot.setEndTime(start.plus(duration));
+
+			slots.add(slot);
+			start = start.plus(duration); // Passage au créneau suivant
 		}
 
-		// 2°) Recherche de la réservation existante
-		Reservation reservation = reservationRepository.findById(idReservation)
-				.orElseThrow(() -> new RuntimeException("Réservation introuvable"));
+		// Sauvegarde tous les créneaux générés
+		return timeSlotRepository.saveAll(slots);
+	}
+	
+	public List<TimeSlot> getTimeSlotsNonReservesPourEvenement(Long evenementId, LocalDate selectedDate) {
+	    Evenement evenement = evenementRepository.findById(evenementId)
+	            .orElseThrow(() -> new RuntimeException("Événement introuvable"));
 
-		// 3°) Vérifier si un autre utilisateur a déjà réservé cet événement au même
-		// horaire
-		boolean autreUtilisateurReserve = reservationRepository.existsByEvenementAndHeureDebutAndUserNot(
-				reservation.getEvenement(), heureDebut, reservation.getUser());
-
-		if (autreUtilisateurReserve) {
-			return "Un autre utilisateur a déjà réservé cet événement à cet horaire.";
-		}
-
-		// 4°) Vérifier le nombre de réservations de cet utilisateur pour cet événement et cette heure
-		long count = reservationRepository.countByUserAndEvenementAndHeureDebut(reservation.getUser(),
-				reservation.getEvenement(), heureDebut);
-
-		if (count >= 3) {
-			return "L'utilisateur ne peut pas réserver plus de 3 fois cet événement à cette heure.";
-		}
-
-		// 5°) Calcul de la nouvelle heure de fin de la réservation
-		LocalTime nouvelleHeureFin = heureDebut.plus(duree);
-
-		// 6°) Mise à jour des informations de la réservation
-		reservation.setHeureDebut(heureDebut);
-		reservation.setHeureFin(nouvelleHeureFin);
-		reservation.setDuree(duree);
-		reservation.setDateReservation(LocalDateTime.now());
-
-		// 7°) Sauvegarde de la réservation mise à jour dans la base de données
-		reservationRepository.save(reservation);
-
-		// 8°) Retour de la réponse de succès
-		return "Mise à jour réussie ! " + "Événement : " + reservation.getEvenement().getNom() + ", " + "Utilisateur : "
-				+ reservation.getUser().getNom() + ", " + "Nouvelle heure de début : " + heureDebut + ", "
-				+ "Nouvelle durée : " + duree.toMinutes() + " minutes.";
+	    return reservationRepository.findTimeSlotsNotReservedForEvenementAndDate(evenement, selectedDate);
 	}
 
-	// Récupère une seule réservation par son id
+
+	// Récupère une réservation par son identifiant
 	public Reservation getReservationById(Long idReservation) {
 		return reservationRepository.findById(idReservation).get();
 	}
 
-	// Récupère toutes les réservations d'un utilisateur en fonction de son id
+	// Récupère toutes les réservations effectuées par un utilisateur donné
 	public List<Reservation> getReservationsByUserId(int userId) {
 		return reservationRepository.findByUserIdUser(userId);
 	}
 
-	// Récupère toute les réservations
+	// Récupère toutes les réservations existantes
 	public List<Reservation> getReservation() {
 		return reservationRepository.findAll();
 	}
@@ -146,5 +121,4 @@ public class ReservationService {
 	public void deleteReservation(Reservation reservation) {
 		reservationRepository.delete(reservation);
 	}
-
 }
