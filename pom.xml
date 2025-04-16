@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Fichier de configuration Maven pour un projet Spring Boot -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<!-- Version du modèle POM -->
 	<modelVersion>4.0.0</modelVersion>
 
@@ -12,7 +12,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.2</version>
-		<relativePath/> <!-- Recherche le parent depuis le dépôt central -->
+		<relativePath /> <!-- Recherche le parent depuis le dépôt central -->
 	</parent>
 
 	<!-- Informations basiques sur le projet -->
@@ -21,24 +21,24 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>escaperoom</name>
 	<description>Application web escaperoom</description>
-	<url/> <!-- URL du projet (peut être laissée vide) -->
+	<url /> <!-- URL du projet (peut être laissée vide) -->
 
 	<!-- Informations sur la licence (vide pour l’instant) -->
 	<licenses>
-		<license/>
+		<license />
 	</licenses>
 
 	<!-- Informations sur les développeurs (vide pour l’instant) -->
 	<developers>
-		<developer/>
+		<developer />
 	</developers>
 
 	<!-- Informations de gestion de code source (vide pour l’instant) -->
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection />
+		<developerConnection />
+		<tag />
+		<url />
 	</scm>
 
 	<!-- Propriétés du projet -->
@@ -48,6 +48,32 @@
 	</properties>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.12.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>4.4.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>32.1.2-jre</version>
+		</dependency>
+		
+		<dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <version>5.8.1</version> <!-- Utilise la version compatible avec ta version de Spring Security -->
+            <scope>test</scope>
+        </dependency>
+		
 		<!-- Dépendance pour l’accès aux bases de données via JPA -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -100,40 +126,33 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-		<!-- Dépendance personnalisée externe (par exemple, un autre module ou service) -->
-		<dependency>
-			<groupId>com.parkauto.rest</groupId>
-			<artifactId>parkauto1</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		
 		<!-- Dépendance Spring Boot pour envoyer des e-mails via SMTP.
 		Fournit la configuration automatique de JavaMailSender. -->
 		<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 
 		<!-- Librairies pour la gestion des JWT (authentification avec JSON Web Tokens) -->
 		<dependency>
-		    <groupId>io.jsonwebtoken</groupId>
-		    <artifactId>jjwt-api</artifactId>
-		    <version>0.11.5</version>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
 		</dependency>
 
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>0.11.5</version>
-            <scope>runtime</scope>
-       </dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
 
-       <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId> <!-- Pour (dé)sérialiser JWT avec Jackson -->
-            <version>0.11.5</version>
-            <scope>runtime</scope>
-      </dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId> <!-- Pour (dé)sérialiser JWT avec Jackson -->
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 
 	<!-- Gestion centralisée des versions pour Spring Cloud -->

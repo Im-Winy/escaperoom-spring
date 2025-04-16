@@ -1,10 +1,10 @@
 package com.escaperoom.escaperoom.entity;
 
-import static com.parkauto.rest.constant.Authority.ADMIN_AUTHORITIES;
-import static com.parkauto.rest.constant.Authority.HR_AUTHORITIES;
-import static com.parkauto.rest.constant.Authority.MANAGER_AUTHORITIES;
-import static com.parkauto.rest.constant.Authority.SUPER_ADMIN_AUTHORITIES;
-import static com.parkauto.rest.constant.Authority.USER_AUTHORITIES;
+import static com.escaperoom.escaperoom.constant.Authority.ADMIN_AUTHORITIES;
+import static com.escaperoom.escaperoom.constant.Authority.HR_AUTHORITIES;
+import static com.escaperoom.escaperoom.constant.Authority.MANAGER_AUTHORITIES;
+import static com.escaperoom.escaperoom.constant.Authority.SUPER_ADMIN_AUTHORITIES;
+import static com.escaperoom.escaperoom.constant.Authority.USER_AUTHORITIES;
 
 public enum Role {
 
