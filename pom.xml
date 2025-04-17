@@ -73,6 +73,13 @@
             <version>5.8.1</version> <!-- Utilise la version compatible avec ta version de Spring Security -->
             <scope>test</scope>
         </dependency>
+
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.0.0</version> <!-- adapte la version si besoin -->
+			<scope>provided</scope>
+		</dependency>
 		
 		<!-- Dépendance pour l’accès aux bases de données via JPA -->
 		<dependency>

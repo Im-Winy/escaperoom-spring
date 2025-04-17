@@ -12,8 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-
 @Service
 public class LoginAttemptService {
     private static final int MAXIMUM_NUMBER_OF_ATTEMPTS =5;
