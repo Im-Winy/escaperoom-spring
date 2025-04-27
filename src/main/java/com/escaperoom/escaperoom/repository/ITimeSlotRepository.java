@@ -12,4 +12,5 @@ import com.escaperoom.escaperoom.entity.TimeSlot;
 public interface ITimeSlotRepository extends JpaRepository<TimeSlot, Long> {
     
 	List<TimeSlot> findByDate(LocalDate date);
+
 }

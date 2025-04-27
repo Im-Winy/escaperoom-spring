@@ -2,7 +2,6 @@ package com.escaperoom.escaperoom.controller;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.escaperoom.escaperoom.entity.Evenement;
 import com.escaperoom.escaperoom.entity.Reservation;
 import com.escaperoom.escaperoom.entity.TimeSlot;
 import com.escaperoom.escaperoom.entity.User;
@@ -74,12 +72,19 @@ public class ReservationController {
     }
      
 	// Générer les créneaux pour une seule journée
-	@PostMapping("/generer-creneaux-journee")
-	public ResponseEntity<?> generateSlotsForDay(
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-		List<TimeSlot> slots = reservationService.generateTimeSlotsForDay(date);
-		return ResponseEntity.ok(slots);
-	}
+    @PostMapping("/generer-creneaux-journee")
+    public ResponseEntity<?> generateSlotsForDay(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        
+        Object result = reservationService.generateTimeSlotsForDay(date);
+
+        if (result instanceof String) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
+        } else {
+            return ResponseEntity.ok(result);
+        }
+    }
+
 
 	// Récupère toutes les réservations
 	@GetMapping("/reservations")

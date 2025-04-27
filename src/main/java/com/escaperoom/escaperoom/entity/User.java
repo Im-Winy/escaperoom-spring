@@ -51,9 +51,9 @@ public class User implements UserDetails {
 	@Column(name="EMAIL")
 	private String email;
 	
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	@JsonManagedReference(value = "user-reservation")
-	private List<Reservation> reservation = new ArrayList<>();
+    private List<Reservation> reservation = new ArrayList<>();
 	
 	private boolean isActive;  //Pour activer les rôles
 	
@@ -149,6 +149,14 @@ public class User implements UserDetails {
 	public void setPrenom(String prenom) {
 		this.prenom = prenom;
 	}
+	
+	public List<Reservation> getReservation() {
+		return reservation;
+	}
+
+	public void setReservation(List<Reservation> reservation) {
+		this.reservation = reservation;
+	}
 
 	public String getEmail() {
 		return email;
@@ -156,14 +164,6 @@ public class User implements UserDetails {
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public List<Reservation> getReservation() {
-		return reservation;
-	}
-
-	public void setReservation(List<Reservation> reservation) {
-		this.reservation = reservation;
 	}
 
 	public boolean isActive() {

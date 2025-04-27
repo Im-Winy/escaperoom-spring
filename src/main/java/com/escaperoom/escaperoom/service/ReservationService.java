@@ -72,27 +72,33 @@ public class ReservationService {
 
 
 	// Génère les créneaux horaires d'une journée donnée
-	public List<TimeSlot> generateTimeSlotsForDay(LocalDate date) {
-		LocalTime start = LocalTime.of(10, 0); // Heure d'ouverture
-		LocalTime end = LocalTime.of(22, 0); // Heure de fermeture
-		Duration duration = Duration.ofMinutes(60); // Durée d'un créneau
+	public Object generateTimeSlotsForDay(LocalDate date) {
+		
+	    // Vérifie si des créneaux existent déjà pour ce jour
+	    List<TimeSlot> existingSlots = timeSlotRepository.findByDate(date);
+	    if (!existingSlots.isEmpty()) {
+	        return "déjà réservé"; // Si créneaux existent, on renvoie ce message
+	    }
 
-		List<TimeSlot> slots = new ArrayList<>();
+	    LocalTime start = LocalTime.of(10, 0); // Heure d'ouverture
+	    LocalTime end = LocalTime.of(22, 0);   // Heure de fermeture
+	    Duration duration = Duration.ofMinutes(60); // Durée d'un créneau
 
-		// Boucle pour générer des créneaux de 90 minutes jusqu'à la fin de la journée
-		while (start.plus(duration).isBefore(end.plusSeconds(1))) {
-			TimeSlot slot = new TimeSlot();
-			slot.setDate(date);
-			slot.setStartTime(start);
-			slot.setEndTime(start.plus(duration));
+	    List<TimeSlot> slots = new ArrayList<>();
 
-			slots.add(slot);
-			start = start.plus(duration); // Passage au créneau suivant
-		}
+	    while (start.plus(duration).isBefore(end.plusSeconds(1))) {
+	        TimeSlot slot = new TimeSlot();
+	        slot.setDate(date);
+	        slot.setStartTime(start);
+	        slot.setEndTime(start.plus(duration));
 
-		// Sauvegarde tous les créneaux générés
-		return timeSlotRepository.saveAll(slots);
+	        slots.add(slot);
+	        start = start.plus(duration); // Passage au créneau suivant
+	    }
+
+	    return timeSlotRepository.saveAll(slots);
 	}
+
 	
 	public List<TimeSlot> getTimeSlotsNonReservesPourEvenement(Long evenementId, LocalDate selectedDate) {
 	    Evenement evenement = evenementRepository.findById(evenementId)
