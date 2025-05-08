@@ -4,11 +4,14 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.escaperoom.escaperoom.entity.Evenement;
@@ -35,6 +38,8 @@ public class ReservationService {
 
 	@Autowired
 	IEvenementRepository evenementRepository;
+	
+	@Autowired EmailService emailService;
 
 	public Reservation reserve(Long timeSlotId, Long idUser, Long idEvenement) {
 
@@ -67,17 +72,38 @@ public class ReservationService {
 	    reservation.setDateReservation(LocalDateTime.now());
 
 	    // Sauvegarde de la réservation
-	    return reservationRepository.save(reservation);
+	    Reservation savedReservation = reservationRepository.save(reservation);
+	    
+	 // Formatage de la date et de l'heure
+	    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+	    String formattedDate = timeSlot.getDate().format(dateFormatter);
+	    String formattedTime = timeSlot.getStartTime().format(timeFormatter);
+	    
+	 // Envoi de l'e-mail de confirmation
+	    emailService.sendReservationConfirmation(
+	        utilisateur.getEmail(),
+	        utilisateur.getUsername(),
+	        evenement.getNom(),
+	        formattedDate,  // Date formatée
+	        formattedTime   // Heure formatée
+	    );
+	    
+	 // Retour de la réservation
+	    return savedReservation;
 	}
 
 
 	// Génère les créneaux horaires d'une journée donnée
-	public Object generateTimeSlotsForDay(LocalDate date) {
+	public ResponseEntity<?> generateTimeSlotsForDay(LocalDate date) {
 		
 	    // Vérifie si des créneaux existent déjà pour ce jour
 	    List<TimeSlot> existingSlots = timeSlotRepository.findByDate(date);
 	    if (!existingSlots.isEmpty()) {
-	        return "déjà réservé"; // Si créneaux existent, on renvoie ce message
+	        return ResponseEntity
+	            .status(HttpStatus.CONFLICT)
+	            .body("Les créneaux pour cette journée existent déjà.");
 	    }
 
 	    LocalTime start = LocalTime.of(10, 0); // Heure d'ouverture
@@ -86,7 +112,8 @@ public class ReservationService {
 
 	    List<TimeSlot> slots = new ArrayList<>();
 
-	    while (start.plus(duration).isBefore(end.plusSeconds(1))) {
+		// Tant que l’heure de début plus la durée du créneau n’excède pas l’heure de fermeture, on continue la génération.
+	    while (!start.plus(duration).isAfter(end)) {
 	        TimeSlot slot = new TimeSlot();
 	        slot.setDate(date);
 	        slot.setStartTime(start);
@@ -96,7 +123,8 @@ public class ReservationService {
 	        start = start.plus(duration); // Passage au créneau suivant
 	    }
 
-	    return timeSlotRepository.saveAll(slots);
+	    List<TimeSlot> savedSlots = timeSlotRepository.saveAll(slots);
+	    return ResponseEntity.ok(savedSlots);
 	}
 
 	
