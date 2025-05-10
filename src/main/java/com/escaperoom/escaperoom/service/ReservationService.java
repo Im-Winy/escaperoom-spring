@@ -19,6 +19,7 @@ import com.escaperoom.escaperoom.entity.Reservation;
 import com.escaperoom.escaperoom.entity.TimeSlot;
 import com.escaperoom.escaperoom.entity.User;
 import com.escaperoom.escaperoom.repository.IEvenementRepository;
+import com.escaperoom.escaperoom.repository.IPaiementRepository;
 import com.escaperoom.escaperoom.repository.IReservationRepository;
 import com.escaperoom.escaperoom.repository.ITimeSlotRepository;
 import com.escaperoom.escaperoom.repository.IUserRepository;
@@ -40,6 +41,8 @@ public class ReservationService {
 	IEvenementRepository evenementRepository;
 	
 	@Autowired EmailService emailService;
+	
+	@Autowired PaiementService paiementService;
 
 	public Reservation reserve(Long timeSlotId, Long idUser, Long idEvenement) {
 
@@ -70,18 +73,19 @@ public class ReservationService {
 	    reservation.setEvenement(evenement);
 	    reservation.setTimeSlot(timeSlot);
 	    reservation.setDateReservation(LocalDateTime.now());
+	    reservation.setPaiement(null); // Pas encore de paiement
 
 	    // Sauvegarde de la réservation
 	    Reservation savedReservation = reservationRepository.save(reservation);
 	    
-	 // Formatage de la date et de l'heure
+	    // Formatage de la date et de l'heure
 	    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
 	    String formattedDate = timeSlot.getDate().format(dateFormatter);
 	    String formattedTime = timeSlot.getStartTime().format(timeFormatter);
 	    
-	 // Envoi de l'e-mail de confirmation
+	    // Envoi de l'e-mail de confirmation
 	    emailService.sendReservationConfirmation(
 	        utilisateur.getEmail(),
 	        utilisateur.getUsername(),
@@ -90,7 +94,7 @@ public class ReservationService {
 	        formattedTime   // Heure formatée
 	    );
 	    
-	 // Retour de la réservation
+	    // Retour de la réservation
 	    return savedReservation;
 	}
 

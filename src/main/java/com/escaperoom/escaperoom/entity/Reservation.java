@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -41,18 +42,24 @@ public class Reservation {
 	@JsonBackReference(value = "evenement-reservation")
 	@JoinColumn(name="ID_EVENEMENT")
 	private Evenement evenement;
+	
+	@OneToOne
+	@JsonBackReference(value = "paiement-reservation")
+	@JoinColumn(name="ID_PAIEMENT")
+	private Paiement paiement;
 
 	public Reservation() {
 		super();
 	}
 
-	public Reservation(Long idReservation, LocalDateTime dateReservation, User user, Evenement evenement, TimeSlot timeSlot) {
+	public Reservation(Long idReservation, LocalDateTime dateReservation, User user, Evenement evenement, TimeSlot timeSlot, Paiement paiement) {
 		super();
 		this.idReservation = idReservation;
 		this.dateReservation = dateReservation;
 		this.user = user;
 		this.evenement = evenement;
 		this.timeSlot = timeSlot;
+		this.paiement = paiement;
 	}
 
 	public Long getIdReservation() {
@@ -93,6 +100,14 @@ public class Reservation {
 
 	public void setTimeSlot(TimeSlot timeSlot) {
 		this.timeSlot = timeSlot;
+	}
+
+	public Paiement getPaiement() {
+		return paiement;
+	}
+
+	public void setPaiement(Paiement paiement) {
+		this.paiement = paiement;
 	}	
 	
 }
