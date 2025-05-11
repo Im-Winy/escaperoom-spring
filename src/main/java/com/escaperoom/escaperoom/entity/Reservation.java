@@ -1,5 +1,6 @@
 package com.escaperoom.escaperoom.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -28,6 +29,15 @@ public class Reservation {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	private LocalDateTime dateReservation;
 	
+    @Column(name = "MONTANT")
+    private BigDecimal montant;
+    
+    @Column(name = "MONTANT_HT")
+    private BigDecimal montantHT;
+    
+    @Column(name = "MONTANT_TVA")
+    private BigDecimal montantTVA;
+	
 	@ManyToOne
 	@JsonBackReference(value = "timeslot-reservation")
     @JoinColumn(name = "ID_CRENEAU_HORAIRE")
@@ -52,10 +62,13 @@ public class Reservation {
 		super();
 	}
 
-	public Reservation(Long idReservation, LocalDateTime dateReservation, User user, Evenement evenement, TimeSlot timeSlot, Paiement paiement) {
+	public Reservation(Long idReservation, LocalDateTime dateReservation, BigDecimal montant, BigDecimal montantHT, BigDecimal montantTVA, User user, Evenement evenement, TimeSlot timeSlot, Paiement paiement) {
 		super();
 		this.idReservation = idReservation;
 		this.dateReservation = dateReservation;
+		this.montant = montant;
+		this.montantHT = montantHT;
+		this.montantTVA = montantTVA;
 		this.user = user;
 		this.evenement = evenement;
 		this.timeSlot = timeSlot;
@@ -76,6 +89,30 @@ public class Reservation {
 
 	public void setDateReservation(LocalDateTime dateReservation) {
 		this.dateReservation = dateReservation;
+	}
+
+	public BigDecimal getMontant() {
+		return montant;
+	}
+
+	public void setMontant(BigDecimal montant) {
+		this.montant = montant;
+	}
+
+	public BigDecimal getMontantHT() {
+		return montantHT;
+	}
+
+	public void setMontantHT(BigDecimal montantHT) {
+		this.montantHT = montantHT;
+	}
+
+	public BigDecimal getMontantTVA() {
+		return montantTVA;
+	}
+
+	public void setMontantTVA(BigDecimal montantTVA) {
+		this.montantTVA = montantTVA;
 	}
 
 	public User getUser() {

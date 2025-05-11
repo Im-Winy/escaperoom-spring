@@ -1,5 +1,6 @@
 package com.escaperoom.escaperoom.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -23,28 +24,36 @@ public class PaiementService {
 	IReservationRepository reservationRepository;
 
 	public Paiement processPayment(PaymentRequest request, Long reservationId) {
-	    boolean approved = !request.getPaymentToken().equalsIgnoreCase("fail");
+    // Cherche la réservation
+    Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new RuntimeException("Réservation introuvable"));
 
-	    // Créer un paiement
-	    Paiement paiement = new Paiement();
-	    paiement.setAmount(request.getAmount());
-	    paiement.setPaymentToken(request.getPaymentToken());
-	    paiement.setTransactionId(UUID.randomUUID().toString());
-	    paiement.setStatut(approved ? StatutPaiement.APPROUVE : StatutPaiement.REFUSE);
-	    paiement.setDatePaiement(LocalDateTime.now());
+    // Vérifie que le montant correspond exactement à ce qui est attendu
+    BigDecimal montantAttendu = reservation.getMontant(); // BigDecimal
+    BigDecimal montantRecu = BigDecimal.valueOf(request.getAmount()); // conversion Long → BigDecimal
 
-	    Paiement savedPaiement = paiementRepository.save(paiement);
+    if (montantRecu.compareTo(montantAttendu) != 0) {
+        throw new IllegalArgumentException("Le montant du paiement ne correspond pas au montant attendu : " + montantAttendu);
+    }
 
-	    if (approved) {
-	        // Si le paiement est approuvé, lier le paiement à la réservation
-	        Reservation reservation = reservationRepository.findById(reservationId)
-	                .orElseThrow(() -> new RuntimeException("Réservation introuvable"));
+    boolean approved = !request.getPaymentToken().equalsIgnoreCase("fail");
 
-	        reservation.setPaiement(savedPaiement);
-	        reservationRepository.save(reservation);
-	    }
+    // Création du paiement
+    Paiement paiement = new Paiement();
+    paiement.setAmount(request.getAmount());
+    paiement.setPaymentToken(request.getPaymentToken());
+    paiement.setTransactionId(UUID.randomUUID().toString());
+    paiement.setStatut(approved ? StatutPaiement.APPROUVE : StatutPaiement.REFUSE);
+    paiement.setDatePaiement(LocalDateTime.now());
 
-	    return savedPaiement;
-	}
+    Paiement savedPaiement = paiementRepository.save(paiement);
+
+    if (approved) {
+        reservation.setPaiement(savedPaiement);
+        reservationRepository.save(reservation);
+    }
+
+    return savedPaiement;
+}
 
 }

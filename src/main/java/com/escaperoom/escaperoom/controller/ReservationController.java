@@ -36,55 +36,51 @@ public class ReservationController {
 	ITimeSlotRepository timeSlotRepository;
 
 	// Réserve un créneau pour un utilisateur donné et un événement donné
-    @PostMapping("/reservation/{idUser}/{idEvenement}")
-    public ResponseEntity<?> reserve(
-    		@PathVariable Long idUser,    
-    		@PathVariable Long idEvenement, 
-            @RequestParam Long timeSlotId) {
-        try {
-            // Appel du service pour effectuer la réservation
-            Reservation reservation = reservationService.reserve(timeSlotId, idUser, idEvenement);
-            return ResponseEntity.ok(reservation);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
+	@PostMapping("/reservation/{idUser}/{idEvenement}")
+	public ResponseEntity<?> reserve(@PathVariable Long idUser, @PathVariable Long idEvenement,
+			@RequestParam Long timeSlotId) {
+		try {
+			// Appel du service pour effectuer la réservation
+			Reservation reservation = reservationService.reserve(timeSlotId, idUser, idEvenement);
+			return ResponseEntity.ok(reservation);
+		} catch (IllegalStateException e) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+		} catch (RuntimeException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		}
+	}
 
-    @GetMapping("/evenement/{evenementId}/timeslots")
-    public ResponseEntity<List<TimeSlot>> getAvailableTimeSlots(
-            @PathVariable Long evenementId,
-            @RequestParam String selectedDate) {
+	@GetMapping("/evenement/{evenementId}/timeslots")
+	public ResponseEntity<List<TimeSlot>> getAvailableTimeSlots(@PathVariable Long evenementId,
+			@RequestParam String selectedDate) {
 
-        // Convertir la chaîne en LocalDate
-        LocalDate date = LocalDate.parse(selectedDate);
-        
-        try {
-            List<TimeSlot> timeSlots = reservationService.getTimeSlotsNonReservesPourEvenement(evenementId, date);
-            if (timeSlots.isEmpty()) {
-                return ResponseEntity.noContent().build(); // Aucun créneau disponible
-            }
-            return ResponseEntity.ok(timeSlots); // Renvoie les créneaux horaires disponibles
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Événement introuvable
-        }
-    }
-     
+		// Convertir la chaîne en LocalDate
+		LocalDate date = LocalDate.parse(selectedDate);
+
+		try {
+			List<TimeSlot> timeSlots = reservationService.getTimeSlotsNonReservesPourEvenement(evenementId, date);
+			if (timeSlots.isEmpty()) {
+				return ResponseEntity.noContent().build(); // Aucun créneau disponible
+			}
+			return ResponseEntity.ok(timeSlots); // Renvoie les créneaux horaires disponibles
+		} catch (RuntimeException ex) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Événement introuvable
+		}
+	}
+
 	// Générer les créneaux pour une seule journée
-    @PostMapping("/generer-creneaux-journee")
-    public ResponseEntity<?> generateSlotsForDay(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        
-        Object result = reservationService.generateTimeSlotsForDay(date);
+	@PostMapping("/generer-creneaux-journee")
+	public ResponseEntity<?> generateSlotsForDay(
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-        if (result instanceof String) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
-        } else {
-            return ResponseEntity.ok(result);
-        }
-    }
+		Object result = reservationService.generateTimeSlotsForDay(date);
 
+		if (result instanceof String) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
+		} else {
+			return ResponseEntity.ok(result);
+		}
+	}
 
 	// Récupère toutes les réservations
 	@GetMapping("/reservations")
