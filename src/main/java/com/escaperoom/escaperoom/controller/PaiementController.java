@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/auth/payments")
-@CrossOrigin(origins = "*") // utile si front-end séparé (ex : Angular)
+@RequestMapping("/api/auth")
+@CrossOrigin("*")
 public class PaiementController {
 
     @Autowired

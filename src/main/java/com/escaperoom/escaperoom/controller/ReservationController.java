@@ -58,7 +58,7 @@ public class ReservationController {
 		LocalDate date = LocalDate.parse(selectedDate);
 
 		try {
-			List<TimeSlot> timeSlots = reservationService.getTimeSlotsNonReservesPourEvenement(evenementId, date);
+			List<TimeSlot> timeSlots = reservationService.getAvailableTimeSlotsForEvenement(evenementId, date);
 			if (timeSlots.isEmpty()) {
 				return ResponseEntity.noContent().build(); // Aucun créneau disponible
 			}
@@ -87,16 +87,13 @@ public class ReservationController {
 	public List<Reservation> getAllUsers(@Validated @RequestBody(required = false) User user) {
 		return reservationService.getReservation();
 	}
-
+	
 	// Supprime une réservation
-	@DeleteMapping("/reservations/{id}")
-	public ResponseEntity<Reservation> deleteUser(@PathVariable(name = "id") Long idReservation) {
-		Reservation reservation = reservationService.getReservationById(idReservation);
-		if (reservation == null) {
-			return ResponseEntity.notFound().build();
-		}
-		reservationService.deleteReservation(reservation);
-		return ResponseEntity.ok().body(reservation);
-	}
+	@DeleteMapping("/{reservationId}/cancel")
+    public ResponseEntity<String> cancelReservation(
+            @PathVariable Long reservationId,
+            @RequestParam Long userId) {
+        return reservationService.cancelReservation(reservationId, userId);
+    }
 
 }

@@ -42,27 +42,27 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @Qualifier("UserDetailsService")
 //@RequiredArgsConstructor
-public class UserServiceImpl implements UserService, UserDetailsService{
-	
+public class UserServiceImpl implements UserService, UserDetailsService {
 
 	@Autowired
 	IUserRepository userRepository;
-	private Logger LOGGER = LoggerFactory.getLogger(getClass()) ;
-	
+	private Logger LOGGER = LoggerFactory.getLogger(getClass());
+
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
-	
+
 	@Autowired
 	private LoginAttemptService loginAttemptService;
-	
+
 	@Autowired
 	private EmailService emailService;
-	
+
 	@Autowired
 	private HttpServletRequest request;
-	
+
 	@Autowired
-	public UserServiceImpl(IUserRepository userRepository, BCryptPasswordEncoder passwordEncoder,LoginAttemptService loginAttemptService, EmailService emailService) {
+	public UserServiceImpl(IUserRepository userRepository, BCryptPasswordEncoder passwordEncoder,
+			LoginAttemptService loginAttemptService, EmailService emailService) {
 		super();
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
@@ -74,21 +74,23 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 	// Charge un utilisateur par son nom d'utilisateur pour l'authentification
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		
+
 		// Vérifie d'abord si l'utilisateur est bloqué
-		if(loginAttemptService.isBlocked()) {
+		if (loginAttemptService.isBlocked()) {
 			throw new RuntimeException("You are blocked");
 		}
-		
+
 		try {
 			User user = userRepository.findUserByUsername(username);
-			
-			if(user == null) {
-				return new org.springframework.security.core.userdetails.User(" "," ",true,true,true,true,user.getAuthorities());	
+
+			if (user == null) {
+				return new org.springframework.security.core.userdetails.User(" ", " ", true, true, true, true,
+						user.getAuthorities());
 			}
-			
-			return new org.springframework.security.core.userdetails.User(user.getUsername(),user.getPassword(), user.isEnabled(),true,true,true,user.getAuthorities());
-			
+
+			return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
+					user.isEnabled(), true, true, true, user.getAuthorities());
+
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -97,31 +99,31 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 	// Valide les tentatives de connexion et bloque un utilisateur
 	// s’il a dépassé le nombre maximal de tentatives
 	private void validateLoginAttempt(User user) throws ExecutionException {
-		
-		if(user.isNotLocked()){
-			
-			if(loginAttemptService.hasExceededMaxAttempts(user.getUsername())) {
+
+		if (user.isNotLocked()) {
+
+			if (loginAttemptService.hasExceededMaxAttempts(user.getUsername())) {
 				user.setNotLocked(false);
-				
-			}else {
+
+			} else {
 				user.setNotLocked(true);
 			}
-			
+
 		} else {
 			loginAttemptService.evictUserFromLoginAttemptCache(user.getUsername());
 		}
 	}
 
 	// Retourne un service interne pour charger les utilisateurs
-    // (Méthode redondante avec loadUserByUsername principale)
+	// (Méthode redondante avec loadUserByUsername principale)
 	@Override
 	public UserDetailsService userDetailsService() {
-		
+
 		return new UserDetailsService() {
-			
+
 			@Override
 			public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-				
+
 				return userRepository.findUserByUsername(username);
 			}
 		};
@@ -130,10 +132,10 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 	// Enregistre un nouvel utilisateur avec un mot de passe généré
 	@Override
 	public User register(String prenom, String nom, String username, String email) {
-		
+
 		try {
-			validateNewUsernameAndEmail(StringUtils.EMPTY,username,email);
-			
+			validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
+
 			User user = new User();
 			user.setId(generateUserId());
 			String password = generatePassword();
@@ -149,24 +151,24 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 			user.setRole(Role.ROLE_USER);
 			user.setAuthorities(Role.ROLE_USER.getAuthorities());
 			userRepository.save(user);
-			
+
 			LOGGER.info(NEW_USER_PASSWORD + password);
-			
+
 			// Envoie un email de confirmation
 			emailService.sendConfirmRegister(email, username, password);
-			
+
 			return user;
-			
+
 		} catch (UserNotFoundException | UsernameExistException | EmailExistException e) {
-		
+
 			e.printStackTrace();
-		} 
-		return null;  
+		}
+		return null;
 	}
 
 	// Encode un mot de passe en utilisant BCrypt
 	private String encodePassword(String password) {
-		
+
 		return passwordEncoder.encode(password);
 	}
 
@@ -181,91 +183,92 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 	}
 
 	// Valide que le nom d'utilisateur et l'email n'existent pas déjà
-    // ou qu'ils sont bien associés à l'utilisateur actuel
-	private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException, UsernameExistException, EmailExistException {
-	
-		User userByNewUsername  = findUserByUsername(newUsername);
-		User userByNewEmail  = findUserByEmail(newEmail);
-		
-		if(StringUtils.isNotBlank(currentUsername)) {
-		User currentUser = findUserByUsername(currentUsername);
-		
-		if(currentUser == null) {
-			throw new UserNotFoundException(NO_USER_FOUND_BY_USERNAME+currentUsername);
-		}
-		
-		User userByUsername = findUserByUsername(newUsername);
-		if(userByUsername !=null && !currentUser.getIdUser().equals(userByUsername.getIdUser())) {
-			throw new UsernameExistException(USERNAME_ALREADY_EXIST);
-			
-		}
-		User userByEmail = findUserByEmail(newEmail);
-		if(userByEmail != null && !currentUser.getIdUser().equals(userByEmail.getIdUser())) {
-			
-			throw new EmailExistException(EMAIL_ALREADY_EXIST);
-		}
+	// ou qu'ils sont bien associés à l'utilisateur actuel
+	private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail)
+			throws UserNotFoundException, UsernameExistException, EmailExistException {
+
+		User userByNewUsername = findUserByUsername(newUsername);
+		User userByNewEmail = findUserByEmail(newEmail);
+
+		if (StringUtils.isNotBlank(currentUsername)) {
+			User currentUser = findUserByUsername(currentUsername);
+
+			if (currentUser == null) {
+				throw new UserNotFoundException(NO_USER_FOUND_BY_USERNAME + currentUsername);
+			}
+
+			User userByUsername = findUserByUsername(newUsername);
+			if (userByUsername != null && !currentUser.getIdUser().equals(userByUsername.getIdUser())) {
+				throw new UsernameExistException(USERNAME_ALREADY_EXIST);
+
+			}
+			User userByEmail = findUserByEmail(newEmail);
+			if (userByEmail != null && !currentUser.getIdUser().equals(userByEmail.getIdUser())) {
+
+				throw new EmailExistException(EMAIL_ALREADY_EXIST);
+			}
 			return currentUser;
 		} else {
-			
-			if(userByNewUsername != null) {
-				throw new UsernameExistException(USERNAME_ALREADY_EXIST +userByNewUsername);
-				
+
+			if (userByNewUsername != null) {
+				throw new UsernameExistException(USERNAME_ALREADY_EXIST + userByNewUsername);
+
 			}
-			if(userByNewEmail != null) {
+			if (userByNewEmail != null) {
 				throw new EmailExistException(EMAIL_ALREADY_EXIST + currentUsername + userByNewEmail);
-				
+
 			}
-		return null;
+			return null;
 		}
-		
+
 	}
 
 	// Retourne la liste de tous les utilisateurs
 	@Override
 	public List<User> getUsers() {
-		
+
 		return userRepository.findAll();
 	}
 
 	// Trouve un utilisateur par son nom d'utilisateur
 	@Override
 	public User findUserByUsername(String username) {
-		
+
 		return userRepository.findUserByUsername(username);
 	}
 
 	// Trouve un utilisateur par son email
 	@Override
 	public User findUserByEmail(String email) {
-		
+
 		return userRepository.findUserByEmail(email);
 	}
 
 	// Ajoute un nouvel utilisateur avec les informations fournies
-    // Le rôle est fixé à USER, sans possibilité d'être admin
+	// Le rôle est fixé à USER, sans possibilité d'être admin
 	@Override
-	public User addNewUser(String prenom, String nom, String username, String password, String email,
-			String role, boolean parseBoolean, boolean parseBoolean2) {
-		
+	public User addNewUser(String prenom, String nom, String username, String password, String email, String role,
+			boolean parseBoolean, boolean parseBoolean2) {
+
 		User user = new User();
 		String encodedPassword = encodePassword(password);
 		user.setPrenom(prenom);
 		user.setNom(nom);
 		user.setUsername(username);
 		user.setEmail(email);
-		user.setRole(Role.ROLE_USER);  //User is not allow to be an admin in register
+		user.setRole(Role.ROLE_USER); // User is not allow to be an admin in register
 		user.setAuthorities(Role.ROLE_USER.getAuthorities());
 		user.setPassword(encodedPassword);
-		
+
 		userRepository.save(user);
-		
-		LOGGER.info("Votre mode de passe "+ password);
-		
+
+		LOGGER.info("Votre mode de passe " + password);
+
 		emailService.sendConfirmRegister(email, prenom, password);
-		
+
 		return user;
 	}
-	
+
 	// Met à jour un utilisateur (en tant que ADMIN)
 	@Override
 	public User updateUser(long idUser, String prenom, String nom, String username, String email, String role) {
@@ -274,11 +277,11 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 		user.setNom(nom);
 		user.setUsername(username);
 		user.setEmail(email);
-	    user.setRole(Role.valueOf(role.toUpperCase()));// Convertir la chaîne en Enum
-		
+		user.setRole(Role.valueOf(role.toUpperCase()));// Convertir la chaîne en Enum
+
 		return userRepository.save(user);
 	}
-	
+
 	// Met à jour un utilisateur (en tant que USER)
 	@Override
 	public User updateOneUser(long idUser, String prenom, String nom, String username, String email) {
@@ -287,7 +290,7 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 		user.setNom(nom);
 		user.setUsername(username);
 		user.setEmail(email);
-		
+
 		return userRepository.save(user);
 	}
 
@@ -295,7 +298,7 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 	@Override
 	public void deleteUser(long id) {
 		userRepository.deleteById(id);
-		
+
 	}
 
 }

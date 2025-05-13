@@ -65,8 +65,7 @@ public class ReservationService {
 			throw new IllegalStateException("Ce créneau est déjà réservé pour cet événement.");
 		}
 
-		// Si le créneau n'est pas réservé pour cet événement, on peut procéder à la
-		// réservation
+		// Si le créneau n'est pas réservé pour cet événement, on procéde à la réservation
 
 		// Création de la réservation pour l'événement et l'utilisateur
 		Reservation reservation = new Reservation();
@@ -88,24 +87,41 @@ public class ReservationService {
 		reservation.setPaiement(null); // Pas encore de paiement
 
 		// Sauvegarde de la réservation
-		Reservation savedReservation = reservationRepository.save(reservation);
-
-		// Formatage de la date et de l'heure
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-
-		String formattedDate = timeSlot.getDate().format(dateFormatter);
-		String formattedTime = timeSlot.getStartTime().format(timeFormatter);
-
-		// Envoi de l'e-mail de confirmation
-		emailService.sendReservationConfirmation(utilisateur.getEmail(), utilisateur.getUsername(), evenement.getNom(),
-				formattedDate, // Date formatée
-				formattedTime // Heure formatée
-		);
-
-		// Retour de la réservation
-		return savedReservation;
+		return reservationRepository.save(reservation);
 	}
+
+	// Annulation de la réservation
+	public ResponseEntity<String> cancelReservation(Long reservationId, Long userId) {
+	    Optional<Reservation> optionalReservation = reservationRepository.findById(reservationId);
+
+	    if (optionalReservation.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Réservation non trouvée.");
+	    }
+
+	    Reservation reservation = optionalReservation.get();
+
+	    // Vérifie que l'utilisateur est bien le propriétaire
+	    if (!reservation.getUser().getIdUser().equals(userId)) {
+	        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+	                .body("Vous n'êtes pas autorisé à annuler cette réservation.");
+	    }
+
+	    // Récupération des infos nécessaires à l'email
+	    String email = reservation.getUser().getEmail();
+	    String username = reservation.getUser().getUsername();
+	    String nomEvenement = reservation.getEvenement().getNom();
+	    String date = reservation.getTimeSlot().getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+	    String heure = reservation.getTimeSlot().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+
+	    // Suppression de la réservation
+	    reservationRepository.delete(reservation);
+
+	    // Envoi de l'e-mail d'annulation
+	    emailService.sendReservationCancellation(email, username, nomEvenement, date, heure);
+
+	    return ResponseEntity.ok("Réservation annulée avec succès.");
+	}
+
 
 	// Génère les créneaux horaires d'une journée donnée
 	public ResponseEntity<?> generateTimeSlotsForDay(LocalDate date) {
@@ -139,7 +155,7 @@ public class ReservationService {
 	}
 
 	// Retourne la liste des créneaux horaires disponibles
-	public List<TimeSlot> getTimeSlotsNonReservesPourEvenement(Long evenementId, LocalDate selectedDate) {
+	public List<TimeSlot> getAvailableTimeSlotsForEvenement(Long evenementId, LocalDate selectedDate) {
 		Evenement evenement = evenementRepository.findById(evenementId)
 				.orElseThrow(() -> new RuntimeException("Événement introuvable"));
 		return reservationRepository.findTimeSlotsNotReservedForEvenementAndDate(evenement, selectedDate);

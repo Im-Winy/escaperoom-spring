@@ -25,5 +25,4 @@ public interface IReservationRepository extends JpaRepository<Reservation, Long>
 	@Query("SELECT t FROM TimeSlot t WHERE t NOT IN (SELECT r.timeSlot FROM Reservation r WHERE r.evenement = :evenement) AND t.date = :selectedDate")
 	List<TimeSlot> findTimeSlotsNotReservedForEvenementAndDate(@Param("evenement") Evenement evenement, @Param("selectedDate") LocalDate selectedDate);
 
-
 }

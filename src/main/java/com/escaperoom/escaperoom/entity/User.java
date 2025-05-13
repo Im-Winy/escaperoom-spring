@@ -23,70 +23,70 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="UTILISATEURS")
+@Table(name = "UTILISATEURS")
 public class User implements UserDetails {
-	
+
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_USER")
-	private Long idUser; //id de la base de données
-	private String id; //id de l'utilisateur qui sera visible sur le site web
-	
-	@Column(name="USERNAME")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID_USER")
+	private Long idUser; // id de la base de données
+	private String id; // id de l'utilisateur qui sera visible sur le site web
+
+	@Column(name = "USERNAME")
 	private String username;
-	
-	@Column(name="PASSWORD")
+
+	@Column(name = "PASSWORD")
 	private String password;
-	
-	@Column(name="ROLE")
+
+	@Column(name = "ROLE")
 	@Enumerated(EnumType.STRING)
 	private Role role;
-	
-	@Column(name="NOM")
+
+	@Column(name = "NOM")
 	private String nom;
-	
-	@Column(name="PRENOM")
+
+	@Column(name = "PRENOM")
 	private String prenom;
-	
-	@Column(name="EMAIL")
+
+	@Column(name = "EMAIL")
 	private String email;
-	
+
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	@JsonManagedReference(value = "user-reservation")
-    private List<Reservation> reservation = new ArrayList<>();
-	
-	private boolean isActive;  //Pour activer les rôles
-	
-	private String[] authorities;  //[]= tableau de strings et Authorities = permissions(read, edit,delete)
+	private List<Reservation> reservation = new ArrayList<>();
 
-    private boolean isNotLocked; //Pour bloquer ou pas un user
-    
-    private Date lastLoginDate = new Date();
-    
-    private Date lastLoginDateDisplay = new Date();
-    
-    private Date joinDate = new Date();
-	
+	private boolean isActive; // Pour activer les rôles
+
+	private String[] authorities; // []= tableau de strings et Authorities = permissions(read, edit,delete)
+
+	private boolean isNotLocked; // Pour bloquer ou pas un user
+
+	private Date lastLoginDate = new Date();
+
+	private Date lastLoginDateDisplay = new Date();
+
+	private Date joinDate = new Date();
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return List.of(new SimpleGrantedAuthority(role.name()));
 	}
-	
+
 	@Override
 	public boolean isAccountNonExpired() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isAccountNonLocked() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isCredentialsNonExpired() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isEnabled() {
 		return true;
@@ -149,7 +149,7 @@ public class User implements UserDetails {
 	public void setPrenom(String prenom) {
 		this.prenom = prenom;
 	}
-	
+
 	public List<Reservation> getReservation() {
 		return reservation;
 	}
@@ -209,5 +209,5 @@ public class User implements UserDetails {
 	public void setAuthorities(String[] authorities) {
 		this.authorities = authorities;
 	}
-	
+
 }

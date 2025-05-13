@@ -12,42 +12,55 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EmailService {
 
-	@Autowired
-	private JavaMailSender javaMailSender;
+    @Autowired
+    private JavaMailSender javaMailSender;
 
-	@Async
-	public void sendEmail(String toEmail, String subject, String message) {
+    private static final String FROM_EMAIL = "williamnyacka14@gmail.com";
+    private static final String SIGNATURE = "\n\nCordialement,\nL'équipe EscapeRoom";
 
-		SimpleMailMessage mailMessage = new SimpleMailMessage();
-		mailMessage.setTo(toEmail);
-		mailMessage.setSubject(subject);
-		mailMessage.setText(message);
-		mailMessage.setFrom("williamnyacka14@gmail.com");
+    @Async
+    public void sendEmail(String toEmail, String subject, String message) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(toEmail);
+        mailMessage.setSubject(subject);
+        mailMessage.setText(message);
+        mailMessage.setFrom(FROM_EMAIL);
+        javaMailSender.send(mailMessage);
+    }
 
-		javaMailSender.send(mailMessage);
-	}
+    public void sendConfirmRegister(String email, String username, String password) {
+        String subject = "Confirmation de votre inscription";
+        String message = "Bonjour " + username + ",\n\n"
+                + "Merci de vous être inscrit sur EscapeRoom.\n"
+                + "Voici vos informations de connexion :\n"
+                + "🔐 Mot de passe : " + password + "\n\n"
+                + "Nous vous recommandons de le modifier dès votre première connexion." + SIGNATURE;
 
-	public void sendConfirmRegister(String email, String username, String password) {
+        sendEmail(email, subject, message);
+    }
 
-		String subject = "Confirme ton inscription";
-		String message = "Salut " + username + ",\n\nVoici ton mot de passe : " + password;
+    public void sendReservationConfirmation(String email, String username, String eventName, String eventDate, String eventTime) {
+        String subject = "Confirmation de votre réservation";
+        String message = "Bonjour " + username + ",\n\n"
+                + "Nous vous confirmons la réservation suivante :\n\n"
+                + "📍 Événement : " + eventName + "\n"
+                + "📅 Date : " + eventDate + "\n"
+                + "🕒 Heure : " + eventTime + "\n\n"
+                + "Nous avons hâte de vous accueillir !"
+                + SIGNATURE;
 
-		sendEmail(email, subject, message);
+        sendEmail(email, subject, message);
+    }
 
-	}
+    public void sendReservationCancellation(String email, String username, String eventName, String date, String time) {
+        String subject = "Annulation de votre réservation";
+        String message = "Bonjour " + username + ",\n\n"
+                + "Votre réservation pour l'événement suivant a bien été annulée :\n\n"
+                + "📍 Événement : " + eventName + "\n"
+                + "📅 Date : " + date + "\n"
+                + "🕒 Heure : " + time + "\n\n"
+                + "Nous espérons vous revoir prochainement." + SIGNATURE;
 
-	public void sendReservationConfirmation(String email, String username, String eventName, String eventDate,
-			String eventTime) {
-
-		String subject = "Confirmation de ta réservation";
-		String message = "Bonjour " + username + ",\n\n" + "Ta réservation pour l'événement \"" + eventName
-				+ "\" a bien été confirmée.\n" + "Voici les détails :\n\n" + "📍 Événement : " + eventName + "\n"
-				+ "📅 Date : " + eventDate + "\n" + "🕒 Heure : " + eventTime + "\n\n"
-				+ "Nous sommes ravis de te compter parmi nous.\n"
-				+ "N'hésite pas à nous contacter si tu as la moindre question.\n\n" + "À très bientôt,\n"
-				+ "L'équipe EscapeRoom";
-
-		sendEmail(email, subject, message);
-	}
-
+        sendEmail(email, subject, message);
+    }
 }
