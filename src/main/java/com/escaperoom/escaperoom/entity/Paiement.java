@@ -4,17 +4,10 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
-@Table(name="PAIEMENTS")
+@Table(name = "PAIEMENTS")
 public class Paiement {
 
     @Id
@@ -23,6 +16,7 @@ public class Paiement {
 
     private Long amount;
 
+    // Ne contient que les 4 derniers chiffres
     private String paymentToken;
 
     private String transactionId;
@@ -31,82 +25,79 @@ public class Paiement {
     private StatutPaiement statut;
 
     private LocalDateTime datePaiement;
-    
+
     @OneToOne(mappedBy = "paiement")
     @JsonManagedReference(value = "paiement-reservation")
     private Reservation reservation;
 
+    public Paiement() {}
 
-	public Paiement() {
-		super();
-	}
+    public Paiement(Long idPaiement, Long amount, String paymentToken, String transactionId,
+                    StatutPaiement statut, LocalDateTime datePaiement, Reservation reservation) {
+        this.idPaiement = idPaiement;
+        this.amount = amount;
+        this.paymentToken = paymentToken;
+        this.transactionId = transactionId;
+        this.statut = statut;
+        this.datePaiement = datePaiement;
+        this.reservation = reservation;
+    }
 
-	public Paiement(Long idPaiement, Long amount, String paymentToken, String transactionId, StatutPaiement statut,
-			LocalDateTime datePaiement, Reservation reservation) {
-		super();
-		this.idPaiement = idPaiement;
-		this.amount = amount;
-		this.paymentToken = paymentToken;
-		this.transactionId = transactionId;
-		this.statut = statut;
-		this.datePaiement = datePaiement;
-		this.reservation = reservation;
-	}
+    // Getters & setters
 
-	public Long getIdPaiement() {
-		return idPaiement;
-	}
+    public Long getIdPaiement() {
+        return idPaiement;
+    }
 
-	public void setIdPaiement(Long idPaiement) {
-		this.idPaiement = idPaiement;
-	}
+    public void setIdPaiement(Long idPaiement) {
+        this.idPaiement = idPaiement;
+    }
 
-	public Long getAmount() {
-		return amount;
-	}
+    public Long getAmount() {
+        return amount;
+    }
 
-	public void setAmount(Long amount) {
-		this.amount = amount;
-	}
+    public void setAmount(Long amount) {
+        this.amount = amount;
+    }
 
-	public String getPaymentToken() {
-		return paymentToken;
-	}
+    public String getPaymentToken() {
+        return paymentToken;
+    }
 
-	public void setPaymentToken(String paymentToken) {
-		this.paymentToken = paymentToken;
-	}
+    public void setPaymentToken(String paymentToken) {
+        this.paymentToken = paymentToken;
+    }
 
-	public String getTransactionId() {
-		return transactionId;
-	}
+    public String getTransactionId() {
+        return transactionId;
+    }
 
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
-	}
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
 
-	public StatutPaiement getStatut() {
-		return statut;
-	}
+    public StatutPaiement getStatut() {
+        return statut;
+    }
 
-	public void setStatut(StatutPaiement statut) {
-		this.statut = statut;
-	}
+    public void setStatut(StatutPaiement statut) {
+        this.statut = statut;
+    }
 
-	public LocalDateTime getDatePaiement() {
-		return datePaiement;
-	}
+    public LocalDateTime getDatePaiement() {
+        return datePaiement;
+    }
 
-	public void setDatePaiement(LocalDateTime datePaiement) {
-		this.datePaiement = datePaiement;
-	}
+    public void setDatePaiement(LocalDateTime datePaiement) {
+        this.datePaiement = datePaiement;
+    }
 
-	public Reservation getReservation() {
-		return reservation;
-	}
+    public Reservation getReservation() {
+        return reservation;
+    }
 
-	public void setReservation(Reservation reservation) {
-		this.reservation = reservation;
-	}
-
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
+    }
 }
