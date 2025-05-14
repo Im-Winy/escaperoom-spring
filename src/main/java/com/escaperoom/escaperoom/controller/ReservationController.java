@@ -88,6 +88,12 @@ public class ReservationController {
 		return reservationService.getReservation();
 	}
 	
+	@GetMapping("/historique-reservations/user/{userId}")
+	public List<Reservation> getReservationsByUserId(@PathVariable int userId) {
+	    return reservationService.getReservationsByUserId(userId);
+	}
+
+	
 	// Supprime une réservation
 	@DeleteMapping("/{reservationId}/cancel")
     public ResponseEntity<String> cancelReservation(

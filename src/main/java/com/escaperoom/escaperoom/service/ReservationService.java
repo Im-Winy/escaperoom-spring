@@ -169,7 +169,7 @@ public class ReservationService {
 	// Récupère toutes les réservations effectuées par un utilisateur donné
 	public List<Reservation> getReservationsByUserId(int userId) {
 		return reservationRepository.findByUserIdUser(userId);
-	}
+    }
 
 	// Récupère toutes les réservations existantes
 	public List<Reservation> getReservation() {
