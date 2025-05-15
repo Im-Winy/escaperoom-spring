@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 
 import com.escaperoom.escaperoom.entity.User;
 import com.escaperoom.escaperoom.entity.Role;
-import java.util.List;
 
 
 @Repository

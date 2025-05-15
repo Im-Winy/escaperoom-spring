@@ -17,7 +17,7 @@ public class TimeSlot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_CRENEAU_HORAIRE")
-    private Long id;
+    private Long idTimeSlot;
 
     @Column(name = "DATE")
     private LocalDate date;
@@ -32,20 +32,20 @@ public class TimeSlot {
 		super();
 	}
 
-	public TimeSlot(Long id, LocalDate date, LocalTime startTime, LocalTime endTime) {
+	public TimeSlot(Long idTimeSlot, LocalDate date, LocalTime startTime, LocalTime endTime) {
 		super();
-		this.id = id;
+		this.idTimeSlot = idTimeSlot;
 		this.date = date;
 		this.startTime = startTime;
 		this.endTime = endTime;
 	}
 
-	public Long getId() {
-		return id;
+	public Long getIdTimeSlot() {
+		return idTimeSlot;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setIdTimeSlot(Long idTimeSlot) {
+		this.idTimeSlot = idTimeSlot;
 	}
 
 	public LocalDate getDate() {
