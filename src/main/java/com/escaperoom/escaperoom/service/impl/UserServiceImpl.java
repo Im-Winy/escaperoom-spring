@@ -284,12 +284,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 	// Met à jour un utilisateur (en tant que USER)
 	@Override
-	public User updateOneUser(long idUser, String prenom, String nom, String username, String email) {
+	public User updateOneUser(long idUser, String prenom, String nom, String username, String email, String password) {
 		User user = userRepository.findById(idUser).get();
 		user.setPrenom(prenom);
 		user.setNom(nom);
 		user.setUsername(username);
 		user.setEmail(email);
+		String encodedPassword = encodePassword(password);
+		user.setPassword(encodedPassword);
 
 		return userRepository.save(user);
 	}

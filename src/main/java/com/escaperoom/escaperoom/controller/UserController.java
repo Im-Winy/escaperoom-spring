@@ -108,8 +108,9 @@ public class UserController extends ExceptionHandling {
 			@RequestPart("prenom") String prenom,
 			@RequestPart("nom") String nom, 
 			@RequestPart("username") String username,
-			@RequestPart("email") String email) {
-		User updatedUser = userService.updateOneUser(idUser, prenom, nom, username, email);
+			@RequestPart("email") String email,
+			@RequestPart("password") String password) {
+		User updatedUser = userService.updateOneUser(idUser, prenom, nom, username, email, password);
 		return ResponseEntity.ok(updatedUser);
 	}
 

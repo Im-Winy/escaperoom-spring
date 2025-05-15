@@ -19,7 +19,7 @@ public interface UserService {
     
     User updateUser(long idUser, String prenom, String nom, String username, String email, String role);
     
-    User updateOneUser(long idUser, String prenom, String nom, String username, String email);
+    User updateOneUser(long idUser, String prenom, String nom, String username, String email, String password);
     
     void deleteUser(long id);
 
