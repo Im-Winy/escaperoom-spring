@@ -25,7 +25,7 @@ public class EvenementService {
 		
 		Evenement evenement = new Evenement();
 		evenement.setNom(nom);
-		evenement.setNom(description);
+		evenement.setDescription(description);
 		evenement.setImage(image);
 		evenement.setDuree(duree);
 		evenement.setNbeJoueurMax(nbeJoueurMax);
