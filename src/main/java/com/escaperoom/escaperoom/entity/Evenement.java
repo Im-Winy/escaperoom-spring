@@ -3,6 +3,7 @@ package com.escaperoom.escaperoom.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -48,7 +49,7 @@ public class Evenement {
 	private Difficulte difficulte;
 	
 	@OneToMany(mappedBy = "evenement", cascade = CascadeType.ALL)
-	@JsonManagedReference(value = "evenement-reservation")
+	@JsonIgnore
     private List<Reservation> reservation = new ArrayList<>();
 
 	public Evenement() {

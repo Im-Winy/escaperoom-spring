@@ -2,7 +2,7 @@ package com.escaperoom.escaperoom.entity;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 
@@ -27,7 +27,7 @@ public class Paiement {
     private LocalDateTime datePaiement;
 
     @OneToOne(mappedBy = "paiement")
-    @JsonManagedReference(value = "paiement-reservation")
+    @JsonIgnore
     private Reservation reservation;
 
     public Paiement() {}

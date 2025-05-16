@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,7 +40,7 @@ public class Reservation {
     private BigDecimal montantTVA;
 	
 	@ManyToOne
-	@JsonBackReference(value = "timeslot-reservation")
+	@JsonIgnoreProperties("reservations")
     @JoinColumn(name = "ID_CRENEAU_HORAIRE")
     private TimeSlot timeSlot;
 	
@@ -49,12 +50,12 @@ public class Reservation {
 	private User user;
 	
 	@ManyToOne
-	@JsonBackReference(value = "evenement-reservation")
+	@JsonIgnoreProperties("reservations")
 	@JoinColumn(name="ID_EVENEMENT")
 	private Evenement evenement;
 	
 	@OneToOne
-	@JsonBackReference(value = "paiement-reservation")
+	@JsonIgnoreProperties("reservations")
 	@JoinColumn(name="ID_PAIEMENT")
 	private Paiement paiement;
 
