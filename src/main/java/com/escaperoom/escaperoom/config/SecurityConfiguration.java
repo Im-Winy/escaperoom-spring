@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.util.AntPathMatcher;
 
 import com.escaperoom.escaperoom.constant.filter.JwtAccessDeniedHandler;
 import com.escaperoom.escaperoom.constant.filter.JwtAuthenticationEntryPoint;
@@ -22,7 +21,6 @@ import com.escaperoom.escaperoom.constant.filter.JwtAuthorizationFilter;
 import com.escaperoom.escaperoom.entity.Role;
 import com.escaperoom.escaperoom.service.UserService;
 
-import jakarta.security.auth.message.callback.PrivateKeyCallback.Request;
 import lombok.RequiredArgsConstructor;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
@@ -35,7 +33,6 @@ public class SecurityConfiguration {
 	private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 	private final JwtAuthorizationFilter jwtAuthorizationFilter;
 	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 	
 	@Bean
