@@ -41,7 +41,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @Qualifier("UserDetailsService")
-//@RequiredArgsConstructor
+// @RequiredArgsConstructor
 public class UserServiceImpl implements UserService, UserDetailsService {
 
 	@Autowired
@@ -285,13 +285,19 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	// Met à jour un utilisateur (en tant que USER)
 	@Override
 	public User updateOneUser(long idUser, String prenom, String nom, String username, String email, String password) {
-		User user = userRepository.findById(idUser).get();
+
+		User user = userRepository.findById(idUser)
+				.orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'id : " + idUser));
 		user.setPrenom(prenom);
 		user.setNom(nom);
 		user.setUsername(username);
 		user.setEmail(email);
-		String encodedPassword = encodePassword(password);
-		user.setPassword(encodedPassword);
+
+		// Encoder et mettre à jour le mot de passe seulement si un nouveau est fourni
+		if (password != null && !password.isEmpty()) {
+			String encodedPassword = encodePassword(password);
+			user.setPassword(encodedPassword);
+		}
 
 		return userRepository.save(user);
 	}
