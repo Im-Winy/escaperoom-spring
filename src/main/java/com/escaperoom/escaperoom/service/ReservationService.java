@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +66,8 @@ public class ReservationService {
 			throw new IllegalStateException("Ce créneau est déjà réservé pour cet événement.");
 		}
 
-		// Si le créneau n'est pas réservé pour cet événement, on procéde à la réservation
+		// Si le créneau n'est pas réservé pour cet événement, on procéde à la
+		// réservation
 
 		// Création de la réservation pour l'événement et l'utilisateur
 		Reservation reservation = new Reservation();
@@ -73,6 +75,7 @@ public class ReservationService {
 		reservation.setEvenement(evenement);
 		reservation.setTimeSlot(timeSlot);
 		reservation.setDateReservation(LocalDateTime.now());
+		reservation.setNumeroReservation(generateNumeroReservation());
 
 		// Calcul des montants
 		int prixInt = evenement.getPrix();
@@ -90,36 +93,40 @@ public class ReservationService {
 		return reservationRepository.save(reservation);
 	}
 
+	private String generateNumeroReservation() {
+		return RandomStringUtils.randomNumeric(10);
+	}
+
 	// Annulation de la réservation
 	public ResponseEntity<String> cancelReservation(Long reservationId, Long userId) {
-	    Optional<Reservation> optionalReservation = reservationRepository.findById(reservationId);
+		Optional<Reservation> optionalReservation = reservationRepository.findById(reservationId);
 
-	    if (optionalReservation.isEmpty()) {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Réservation non trouvée.");
-	    }
+		if (optionalReservation.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Réservation non trouvée.");
+		}
 
-	    Reservation reservation = optionalReservation.get();
+		Reservation reservation = optionalReservation.get();
 
-	    // Vérifie que l'utilisateur est bien le propriétaire
-	    if (!reservation.getUser().getIdUser().equals(userId)) {
-	        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-	                .body("Vous n'êtes pas autorisé à annuler cette réservation.");
-	    }
+		// Vérifie que l'utilisateur est bien le propriétaire
+		if (!reservation.getUser().getIdUser().equals(userId)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN)
+					.body("Vous n'êtes pas autorisé à annuler cette réservation.");
+		}
 
-	    // Récupération des infos nécessaires à l'email
-	    String email = reservation.getUser().getEmail();
-	    String username = reservation.getUser().getUsername();
-	    String nomEvenement = reservation.getEvenement().getNom();
-	    String date = reservation.getTimeSlot().getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-	    String heure = reservation.getTimeSlot().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+		// Récupération des infos nécessaires à l'email
+		String email = reservation.getUser().getEmail();
+		String username = reservation.getUser().getUsername();
+		String nomEvenement = reservation.getEvenement().getNom();
+		String date = reservation.getTimeSlot().getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+		String heure = reservation.getTimeSlot().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
 
-	    // Suppression de la réservation
-	    reservationRepository.delete(reservation);
+		// Suppression de la réservation
+		reservationRepository.delete(reservation);
 
-	    // Envoi de l'e-mail d'annulation
-	    emailService.sendReservationCancellation(email, username, nomEvenement, date, heure);
+		// Envoi de l'e-mail d'annulation
+		emailService.sendReservationCancellation(email, username, nomEvenement, date, heure);
 
-	    return ResponseEntity.ok("Réservation annulée avec succès.");
+		return ResponseEntity.ok("Réservation annulée avec succès.");
 	}
 
 	// Génère les créneaux horaires d'une journée donnée
@@ -168,7 +175,7 @@ public class ReservationService {
 	// Récupère toutes les réservations effectuées par un utilisateur donné
 	public List<Reservation> getReservationsByUserId(int userId) {
 		return reservationRepository.findByUserIdUser(userId);
-    }
+	}
 
 	// Récupère toutes les réservations existantes
 	public List<Reservation> getReservation() {

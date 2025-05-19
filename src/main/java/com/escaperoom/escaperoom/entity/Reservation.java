@@ -25,6 +25,9 @@ public class Reservation {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="ID_RESERVATION")
 	private Long idReservation;
+
+	@Column(name="NUMERO_RESERVATION")
+	private String numeroReservation;
 	
 	@Column(name="DATE_RESERVATION")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
@@ -63,9 +66,10 @@ public class Reservation {
 		super();
 	}
 
-	public Reservation(Long idReservation, LocalDateTime dateReservation, BigDecimal montant, BigDecimal montantHT, BigDecimal montantTVA, User user, Evenement evenement, TimeSlot timeSlot, Paiement paiement) {
+	public Reservation(Long idReservation, String numeroReservation, LocalDateTime dateReservation, BigDecimal montant, BigDecimal montantHT, BigDecimal montantTVA, User user, Evenement evenement, TimeSlot timeSlot, Paiement paiement) {
 		super();
 		this.idReservation = idReservation;
+		this.numeroReservation = numeroReservation;
 		this.dateReservation = dateReservation;
 		this.montant = montant;
 		this.montantHT = montantHT;
@@ -82,6 +86,14 @@ public class Reservation {
 
 	public void setIdReservation(Long idReservation) {
 		this.idReservation = idReservation;
+	}
+
+	public String getNumeroReservation() {
+		return numeroReservation;
+	}
+
+	public void setNumeroReservation(String numeroReservation) {
+		this.numeroReservation = numeroReservation;
 	}
 
 	public LocalDateTime getDateReservation() {
