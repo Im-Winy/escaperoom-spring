@@ -122,7 +122,6 @@ public class ReservationService {
 	    return ResponseEntity.ok("Réservation annulée avec succès.");
 	}
 
-
 	// Génère les créneaux horaires d'une journée donnée
 	public ResponseEntity<?> generateTimeSlotsForDay(LocalDate date) {
 
