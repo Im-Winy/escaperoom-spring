@@ -42,7 +42,7 @@ public class UserController extends ExceptionHandling {
 	@Autowired
 	AuthenticationManager authenticationManager;
 	@Autowired
-	JWTService jwtTokenProvider;
+	JWTService jwtToken;
 
 	@PostMapping("login")
 	public ResponseEntity<User> login(@RequestBody User user) {
@@ -68,7 +68,7 @@ public class UserController extends ExceptionHandling {
 
 	private HttpHeaders getJwtHeader(User loginUser) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.add(SecurityConstant.JWT_TOKEN_HEADER, jwtTokenProvider.generateToken(loginUser));
+		headers.add(SecurityConstant.JWT_TOKEN_HEADER, jwtToken.generateToken(loginUser));
 		return headers;
 	}
 
