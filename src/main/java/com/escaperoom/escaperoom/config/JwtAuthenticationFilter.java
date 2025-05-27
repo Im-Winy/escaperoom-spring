@@ -12,6 +12,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.escaperoom.escaperoom.service.JWTService;
 import com.escaperoom.escaperoom.service.UserService;
+import com.escaperoom.escaperoom.service.impl.JwtServiceImpl;
+
 import org.apache.commons.lang3.StringUtils;
 
 import jakarta.servlet.FilterChain;

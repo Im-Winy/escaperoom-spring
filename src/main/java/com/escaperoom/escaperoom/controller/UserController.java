@@ -27,8 +27,8 @@ import com.escaperoom.escaperoom.entity.User;
 import com.escaperoom.escaperoom.exception.EmailExistException;
 import com.escaperoom.escaperoom.exception.ExceptionHandling;
 import com.escaperoom.escaperoom.exception.UsernameExistException;
+import com.escaperoom.escaperoom.service.JWTService;
 import com.escaperoom.escaperoom.service.UserService;
-import com.escaperoom.escaperoom.utility.JWTTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,7 +42,7 @@ public class UserController extends ExceptionHandling {
 	@Autowired
 	AuthenticationManager authenticationManager;
 	@Autowired
-	JWTTokenProvider jwtTokenProvider;
+	JWTService jwtTokenProvider;
 
 	@PostMapping("login")
 	public ResponseEntity<User> login(@RequestBody User user) {
@@ -68,7 +68,7 @@ public class UserController extends ExceptionHandling {
 
 	private HttpHeaders getJwtHeader(User loginUser) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.add(SecurityConstant.JWT_TOKEN_HEADER, jwtTokenProvider.generateJwtToken(loginUser));
+		headers.add(SecurityConstant.JWT_TOKEN_HEADER, jwtTokenProvider.generateToken(loginUser));
 		return headers;
 	}
 

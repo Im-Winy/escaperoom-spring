@@ -14,4 +14,6 @@ public class SecurityConstant {
 	public static final String OPTION_HTTP_METHOD = "OPTIONS";
 	//public static final String[] PUBLIC_URLS = {"/user/login","/user/register","/user/resetpassword/**","/user/image/**"};  //URL que nous ne voulons pas bloquer et nous autorisons tout ce qui est après /**
 	public static final String[] PUBLIC_URLS = {"**"};
+	public static final long REFRESH_EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000; // 7 jours
+
 }
