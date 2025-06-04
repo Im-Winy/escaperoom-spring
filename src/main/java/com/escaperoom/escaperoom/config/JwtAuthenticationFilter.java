@@ -1,6 +1,6 @@
-package com.escaperoom.escaperoom.config;
+package com.escaperoom.escaperoom.config; // Déclare le package de la classe
 
-import java.io.IOException;
+import java.io.IOException; // Pour gérer les exceptions d'entrée/sortie
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -12,7 +12,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.escaperoom.escaperoom.service.JWTService;
 import com.escaperoom.escaperoom.service.UserService;
-import com.escaperoom.escaperoom.service.impl.JwtServiceImpl;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -20,51 +19,55 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.RequiredArgsConstructor;
 
-@Component
-@RequiredArgsConstructor
+@Component // Permet à Spring de détecter automatiquement ce filtre
+@RequiredArgsConstructor // Génère un constructeur injectant les services JWTService et UserService
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	private final JWTService jwtService;
-
-	private final UserService userService;
+	private final JWTService jwtService; // Service pour gérer les JWT
+	private final UserService userService; // Service pour charger les utilisateurs
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
-		final String authHeader = request.getHeader("Authorization");
+		final String authHeader = request.getHeader("Authorization"); // Récupère l'en-tête Authorization
 		final String jwt;
 		final String userEmail;
 
-		if (StringUtils.isEmpty(authHeader)
-				|| !org.apache.commons.lang3.StringUtils.startsWith(authHeader, "Bearer ")) {
-			filterChain.doFilter(request, response);
+		// Vérifie si l'en-tête est vide ou ne commence pas par "Bearer "
+		if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, "Bearer ")) {
+			filterChain.doFilter(request, response); // Poursuit la chaîne sans authentification
 			return;
-
 		}
 
-		jwt = authHeader.substring(7); // Car Bearer a 6 carractères + l'espace =7
-		userEmail = jwtService.extractUserName(jwt);
+		jwt = authHeader.substring(7); // Extrait le JWT en retirant "Bearer "
+		userEmail = jwtService.extractUserName(jwt); // Extrait l’email ou le nom d’utilisateur depuis le JWT
 
+		// Vérifie que le token est bien présent, que l'utilisateur n'est pas encore authentifié
 		if (StringUtils.isNotEmpty(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-			UserDetails userDetails = userService.userDetailsService().loadUserByUsername(userEmail);
+			UserDetails userDetails = userService.userDetailsService().loadUserByUsername(userEmail); // Charge l’utilisateur
 
+			// Vérifie si le token est valide pour cet utilisateur
 			if (jwtService.isTokenValid(jwt, userDetails)) {
 
-				SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, null,
-						userDetails.getAuthorities());
-				token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				securityContext.setAuthentication(token);
-				SecurityContextHolder.setContext(securityContext);
+				SecurityContext securityContext = SecurityContextHolder.createEmptyContext(); // Crée un contexte de sécurité vide
 
+				// Crée un token d’authentification contenant l’utilisateur et ses rôles
+				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+				token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); // Ajoute des détails sur la requête
+				
+				// Définit le token dans le contexte																			
+				securityContext.setAuthentication(token);
+				// Met à jour le contexte de sécurité global
+				SecurityContextHolder.setContext(securityContext);
 			}
 		}
 
-		filterChain.doFilter(request, response);
+		filterChain.doFilter(request, response); // Continue la chaîne de filtres avec ou sans authentification
 	}
-
 }
