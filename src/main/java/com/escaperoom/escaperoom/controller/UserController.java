@@ -91,17 +91,6 @@ public class UserController extends ExceptionHandling {
 				Boolean.parseBoolean(active), Boolean.parseBoolean(isNotLocked));
 		return new ResponseEntity<>(newUser, HttpStatus.OK);
 	}
-
-	@PutMapping("update/{id}")
-	public ResponseEntity<User> updateUser(@PathVariable("id") long idUser, 
-			@RequestPart("prenom") String prenom,
-			@RequestPart("nom") String nom, 
-			@RequestPart("username") String username,
-			@RequestPart("email") String email, 
-			@RequestPart("role") String role) {
-		User updatedUser = userService.updateUser(idUser, prenom, nom, username, email, role);
-		return ResponseEntity.ok(updatedUser);
-	}
 	
 	@PutMapping("user/{id}")
 	public ResponseEntity<User> updateOneUser(@PathVariable("id") long idUser, 
