@@ -1,45 +1,71 @@
 package com.escaperoom.escaperoom.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.escaperoom.dto.JwtAuthenticationResponse;
-import com.escaperoom.dto.RefreshTokenRequest;
-import com.escaperoom.dto.SignInRequest;
-import com.escaperoom.dto.SignUpRequest;
+import com.escaperoom.escaperoom.constant.SecurityConstant;
+import com.escaperoom.escaperoom.constant.UserImplConstant;
 import com.escaperoom.escaperoom.entity.User;
-import com.escaperoom.escaperoom.service.AuthenticationService;
+import com.escaperoom.escaperoom.exception.EmailExistException;
+import com.escaperoom.escaperoom.exception.ExceptionHandling;
+import com.escaperoom.escaperoom.exception.UsernameExistException;
+import com.escaperoom.escaperoom.service.JWTService;
+import com.escaperoom.escaperoom.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-public class AuthenticationController {
+@CrossOrigin("*")
+public class AuthenticationController extends ExceptionHandling {
 	
 	@Autowired
-	AuthenticationService authenticationService;
-	
-	@PostMapping("/signup")
-	public ResponseEntity<User> signup(@RequestBody SignUpRequest signUpRequest){
-		return ResponseEntity.ok(authenticationService.signup(signUpRequest));		
-		
+	UserService userService;
+	@Autowired
+	AuthenticationManager authenticationManager;
+	@Autowired
+	JWTService jwtToken;
+
+	@PostMapping("login")
+	public ResponseEntity<User> login(@RequestBody User user) {
+		authenticate(user.getUsername(), user.getPassword());
+		User loginUser = userService.findUserByUsername(user.getUsername());
+		User userPrincipal = new User();
+		userPrincipal = loginUser;
+		HttpHeaders jwtHeaders = getJwtHeader(userPrincipal);
+
+		return new ResponseEntity<>(loginUser, jwtHeaders, HttpStatus.OK);
 	}
-	
-	@PostMapping("/signin")
-	public ResponseEntity<JwtAuthenticationResponse> signin(@RequestBody SignInRequest signInRequest){
-		return ResponseEntity.ok(authenticationService.signIn(signInRequest));		
-		
+
+	@PostMapping("register")
+	public ResponseEntity<User> register(@RequestBody User user) throws UsernameExistException, EmailExistException {
+
+		User newUser = userService.register(user.getPrenom(), user.getNom(), user.getUsername(), user.getEmail());
+		if (newUser != null) {
+			return new ResponseEntity<>(newUser, HttpStatus.OK);
+		} else {
+			throw new UsernameExistException(UserImplConstant.USERNAME_ALREADY_EXIST);
+		}
 	}
-	
-	@PostMapping("/refresh")
-	public ResponseEntity<JwtAuthenticationResponse> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest){
-		return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));		
-		
+
+	private HttpHeaders getJwtHeader(User loginUser) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(SecurityConstant.JWT_TOKEN_HEADER, jwtToken.generateToken(loginUser));
+		return headers;
+	}
+
+	private void authenticate(String username, String password) {
+		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 	}
 
 }
