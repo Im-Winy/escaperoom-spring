@@ -10,10 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.escaperoom.escaperoom.entity.Role;
 import com.escaperoom.escaperoom.entity.User;
@@ -25,23 +23,13 @@ import com.escaperoom.escaperoom.security.LoginAttemptService;
 import com.escaperoom.escaperoom.service.EmailService;
 import com.escaperoom.escaperoom.service.UserService;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import static com.escaperoom.escaperoom.constant.UserImplConstant.*;
-import static com.escaperoom.escaperoom.constant.FileConstant.*;
-
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
 @Qualifier("UserDetailsService")
-// @RequiredArgsConstructor
 public class UserServiceImpl implements UserService, UserDetailsService {
 
 	@Autowired
@@ -57,59 +45,40 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Autowired
 	private EmailService emailService;
 
-	@Autowired
-	private HttpServletRequest request;
+	// Charge un utilisateur par son nom d'utilisateur pour l'authentification
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		User user = userRepository.findUserByUsername(username);
+		if (user == null)
+			throw new UsernameNotFoundException("Utilisateur non trouvé");
 
-	@Autowired
-	public UserServiceImpl(IUserRepository userRepository, BCryptPasswordEncoder passwordEncoder,
-			LoginAttemptService loginAttemptService, EmailService emailService) {
-		super();
-		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.loginAttemptService = loginAttemptService;
-		this.emailService = emailService;
-		this.request = request;
+		if (loginAttemptService.isBlocked(username)) {
+			user.setNotLocked(false);
+			userRepository.save(user); // Persister le blocage
+		}
+
+		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
+				user.isEnabled(), true, // accountNonExpired
+				true, // credentialsNonExpired
+				user.isNotLocked(), // accountNonLocked
+				user.getAuthorities());
 	}
 
-	// Charge un utilisateur par son nom d'utilisateur pour l'authentification
-	 @Override
-	    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-	        User user = userRepository.findUserByUsername(username);
-	        if (user == null) throw new UsernameNotFoundException("Utilisateur non trouvé");
+	// À appeler dans la méthode d’authentification custom quand la connexion échoue
+	public void onLoginFailure(String username) {
+		loginAttemptService.loginFailed(username);
+	}
 
-	        if (loginAttemptService.isBlocked(username)) {
-	            user.setNotLocked(false);
-	            userRepository.save(user); // Persister le blocage
-	        }
-
-	        return new org.springframework.security.core.userdetails.User(
-	            user.getUsername(),
-	            user.getPassword(),
-	            user.isEnabled(),
-	            true,                 // accountNonExpired
-	            true,                 // credentialsNonExpired
-	            user.isNotLocked(),   // accountNonLocked
-	            user.getAuthorities()
-	        );
-	    }
-
-	    // À appeler dans la méthode d’authentification custom quand la connexion échoue
-	    public void onLoginFailure(String username) {
-	        loginAttemptService.loginFailed(username);
-	    }
-
-	    // À appeler quand la connexion réussit pour réinitialiser le compteur
-	    public void onLoginSuccess(String username) {
-	        loginAttemptService.loginSucceeded(username);
-	        // Remettre l'utilisateur en état déverrouillé si besoin
-	        User user = userRepository.findUserByUsername(username);
-	        if (user != null && !user.isNotLocked()) {
-	            user.setNotLocked(true);
-	            userRepository.save(user);
-	        }
-	    }
-
-
+	// À appeler quand la connexion réussit pour réinitialiser le compteur
+	public void onLoginSuccess(String username) {
+		loginAttemptService.loginSucceeded(username);
+		// Remettre l'utilisateur en état déverrouillé si besoin
+		User user = userRepository.findUserByUsername(username);
+		if (user != null && !user.isNotLocked()) {
+			user.setNotLocked(true);
+			userRepository.save(user);
+		}
+	}
 
 	// Retourne un service interne pour charger les utilisateurs
 	// (Méthode redondante avec loadUserByUsername principale)
@@ -180,7 +149,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	}
 
 	// Valide que le nom d'utilisateur et l'email n'existent pas déjà
-	// ou qu'ils sont bien associés à l'utilisateur actuel
 	private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail)
 			throws UserNotFoundException, UsernameExistException, EmailExistException {
 
@@ -241,8 +209,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		return userRepository.findUserByEmail(email);
 	}
 
-	// Ajoute un nouvel utilisateur avec les informations fournies
-	// Le rôle est fixé à USER, sans possibilité d'être admin
+	// Ajoute un nouvel utilisateur
 	@Override
 	public User addNewUser(String prenom, String nom, String username, String password, String email, String role,
 			boolean parseBoolean, boolean parseBoolean2) {
