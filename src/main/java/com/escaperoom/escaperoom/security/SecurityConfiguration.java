@@ -1,5 +1,6 @@
-package com.escaperoom.escaperoom.config;
+package com.escaperoom.escaperoom.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +15,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -23,21 +26,25 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 
 import java.util.List;
 
-import com.escaperoom.escaperoom.config.JwtAuthenticationFilter;
-import com.escaperoom.escaperoom.constant.filter.JwtAuthenticationEntryPoint;
 import com.escaperoom.escaperoom.entity.Role;
+import com.escaperoom.escaperoom.security.JwtAuthenticationFilter;
 import com.escaperoom.escaperoom.service.UserService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfiguration {
 
-	private final JwtAuthenticationFilter jwtAuthenticationFilter;
-	private final UserService userService;
-	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+	@Autowired
+	JwtAuthenticationFilter jwtAuthenticationFilter;
+	@Autowired
+	UserService userService;
+	@Autowired
+	LoginAttemptService loginAttemptService;
+	@Autowired
+	JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
@@ -71,10 +78,11 @@ public class SecurityConfiguration {
 
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(userService.userDetailsService());
-		provider.setPasswordEncoder(passwordEncoder());
-		return provider;
+	    return new LoginAttemptAuthenticationProvider(
+	        userService.userDetailsService(),
+	        loginAttemptService,
+	        passwordEncoder()
+	    );
 	}
 
 	@Bean

@@ -1,4 +1,4 @@
-package com.escaperoom.escaperoom.config; // Déclare le package de la classe
+package com.escaperoom.escaperoom.security;
 
 import java.io.IOException; // Pour gérer les exceptions d'entrée/sortie
 
@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		final String authHeader = request.getHeader("Authorization"); // Récupère l'en-tête Authorization
 		final String jwt;
-		final String userEmail;
+		final String username;
 
 		// Vérifie si l'en-tête est vide ou ne commence pas par "Bearer "
 		if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, "Bearer ")) {
@@ -44,12 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		jwt = authHeader.substring(7); // Extrait le JWT en retirant "Bearer "
-		userEmail = jwtService.extractUserName(jwt); // Extrait l’email ou le nom d’utilisateur depuis le JWT
+		username = jwtService.extractUserName(jwt); // Extrait le nom d’utilisateur depuis le JWT
 
 		// Vérifie que le token est bien présent, que l'utilisateur n'est pas encore authentifié
-		if (StringUtils.isNotEmpty(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
+		if (StringUtils.isNotEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-			UserDetails userDetails = userService.userDetailsService().loadUserByUsername(userEmail); // Charge l’utilisateur
+			UserDetails userDetails = userService.userDetailsService().loadUserByUsername(username); // Charge l’utilisateur
 
 			// Vérifie si le token est valide pour cet utilisateur
 			if (jwtService.isTokenValid(jwt, userDetails)) {

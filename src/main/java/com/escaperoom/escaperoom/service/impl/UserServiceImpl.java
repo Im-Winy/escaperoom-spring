@@ -21,8 +21,8 @@ import com.escaperoom.escaperoom.exception.EmailExistException;
 import com.escaperoom.escaperoom.exception.UserNotFoundException;
 import com.escaperoom.escaperoom.exception.UsernameExistException;
 import com.escaperoom.escaperoom.repository.IUserRepository;
+import com.escaperoom.escaperoom.security.LoginAttemptService;
 import com.escaperoom.escaperoom.service.EmailService;
-import com.escaperoom.escaperoom.service.LoginAttemptService;
 import com.escaperoom.escaperoom.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -72,47 +72,44 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	}
 
 	// Charge un utilisateur par son nom d'utilisateur pour l'authentification
-	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+	 @Override
+	    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+	        User user = userRepository.findUserByUsername(username);
+	        if (user == null) throw new UsernameNotFoundException("Utilisateur non trouvé");
 
-		// Vérifie d'abord si l'utilisateur est bloqué
-		if (loginAttemptService.isBlocked()) {
-			throw new RuntimeException("You are blocked");
-		}
+	        if (loginAttemptService.isBlocked(username)) {
+	            user.setNotLocked(false);
+	            userRepository.save(user); // Persister le blocage
+	        }
 
-		try {
-			User user = userRepository.findUserByUsername(username);
+	        return new org.springframework.security.core.userdetails.User(
+	            user.getUsername(),
+	            user.getPassword(),
+	            user.isEnabled(),
+	            true,                 // accountNonExpired
+	            true,                 // credentialsNonExpired
+	            user.isNotLocked(),   // accountNonLocked
+	            user.getAuthorities()
+	        );
+	    }
 
-			if (user == null) {
-				return new org.springframework.security.core.userdetails.User(" ", " ", true, true, true, true,
-						user.getAuthorities());
-			}
+	    // À appeler dans la méthode d’authentification custom quand la connexion échoue
+	    public void onLoginFailure(String username) {
+	        loginAttemptService.loginFailed(username);
+	    }
 
-			return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
-					user.isEnabled(), true, true, true, user.getAuthorities());
+	    // À appeler quand la connexion réussit pour réinitialiser le compteur
+	    public void onLoginSuccess(String username) {
+	        loginAttemptService.loginSucceeded(username);
+	        // Remettre l'utilisateur en état déverrouillé si besoin
+	        User user = userRepository.findUserByUsername(username);
+	        if (user != null && !user.isNotLocked()) {
+	            user.setNotLocked(true);
+	            userRepository.save(user);
+	        }
+	    }
 
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
 
-	// Valide les tentatives de connexion et bloque un utilisateur
-	// s’il a dépassé le nombre maximal de tentatives
-	private void validateLoginAttempt(User user) throws ExecutionException {
-
-		if (user.isNotLocked()) {
-
-			if (loginAttemptService.hasExceededMaxAttempts(user.getUsername())) {
-				user.setNotLocked(false);
-
-			} else {
-				user.setNotLocked(true);
-			}
-
-		} else {
-			loginAttemptService.evictUserFromLoginAttemptCache(user.getUsername());
-		}
-	}
 
 	// Retourne un service interne pour charger les utilisateurs
 	// (Méthode redondante avec loadUserByUsername principale)

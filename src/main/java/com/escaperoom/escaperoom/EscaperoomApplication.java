@@ -8,9 +8,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import com.escaperoom.escaperoom.entity.Role;
 import com.escaperoom.escaperoom.entity.User;
@@ -18,10 +15,8 @@ import com.escaperoom.escaperoom.repository.IUserRepository;
 
 @SpringBootApplication
 public class EscaperoomApplication implements CommandLineRunner{
-	
 	@Autowired
 	IUserRepository userRepository;
-
 	public static void main(String[] args) {
 		SpringApplication.run(EscaperoomApplication.class, args);
 	}
@@ -29,6 +24,7 @@ public class EscaperoomApplication implements CommandLineRunner{
 	@Override
 	public void run(String... args) throws Exception {
 		
+		// Création d'un admin
 		User adminAccount = userRepository.findByRole(Role.ROLE_ADMIN);
 		
 		if(adminAccount == null) {
@@ -46,7 +42,7 @@ public class EscaperoomApplication implements CommandLineRunner{
 		}
 		
 	}
-
+	
 	@Bean
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
 	    // Déclare un bean pour encoder les mots de passe avec BCrypt (sécurisé et standard pour le hash)
