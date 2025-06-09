@@ -78,8 +78,11 @@ public class SecurityConfiguration {
 
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
-		return new LoginAttemptAuthenticationProvider(userService.userDetailsService(), loginAttemptService,
-				passwordEncoder());
+		return new LoginAttemptAuthenticationProvider(
+				userService, 
+				loginAttemptService,
+				passwordEncoder()
+				);
 	}
 
 	@Bean

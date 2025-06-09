@@ -5,36 +5,44 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class LoginAttemptService {
 
-    private static final int MAX_ATTEMPTS = 5;
+	private static final int MAX_ATTEMPT = 5;
+	private final LoadingCache<String, Integer> attemptsCache;
 
-    // Cache username -> nombre de tentatives échouées
-    private final LoadingCache<String, Integer> attemptsCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(1, TimeUnit.DAYS) // expire au bout d'un jour
-            .build(new CacheLoader<>() {
-                @Override
-                public Integer load(String key) {
-                    return 0;
-                }
-            });
+	public LoginAttemptService() {
+		this.attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(15, TimeUnit.MINUTES)
+				.build(new CacheLoader<>() {
+					public Integer load(String key) {
+						return 0;
+					}
+				});
+	}
 
-    // Incrémente le nombre de tentatives échouées
-    public void loginFailed(String username) {
-        int attempts = attemptsCache.getUnchecked(username);
-        attemptsCache.put(username, attempts + 1);
-    }
+	public void loginFailed(String key) {
+		int attempts = 0;
+		try {
+			attempts = attemptsCache.get(key);
+		} catch (ExecutionException e) {
+			
+		}
+		attempts++;
+		attemptsCache.put(key, attempts);
+	}
 
-    // Réinitialise le compteur (après succès)
-    public void loginSucceeded(String username) {
-        attemptsCache.invalidate(username);
-    }
+	public void loginSucceeded(String key) {
+		attemptsCache.invalidate(key);
+	}
 
-    // Indique si un utilisateur a dépassé le nombre max de tentatives
-    public boolean isBlocked(String username) {
-        return attemptsCache.getUnchecked(username) >= MAX_ATTEMPTS;
-    }
+	public boolean isBlocked(String key) {
+		try {
+			return attemptsCache.get(key) >= MAX_ATTEMPT;
+		} catch (ExecutionException e) {
+			return false;
+		}
+	}
 }

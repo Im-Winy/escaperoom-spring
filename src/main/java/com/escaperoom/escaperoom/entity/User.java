@@ -57,13 +57,11 @@ public class User implements UserDetails {
 
 	private boolean isActive; // Pour activer les rôles
 
-	private String[] authorities; // []= tableau de strings et Authorities = permissions(read, edit,delete)
+	private String[] authorities; // []= tableau de strings et Authorities
 
 	private boolean isNotLocked; // Pour bloquer ou pas un user
 
 	private Date lastLoginDate = new Date();
-
-	private Date lastLoginDateDisplay = new Date();
 
 	private Date joinDate = new Date();
 
@@ -188,14 +186,6 @@ public class User implements UserDetails {
 
 	public void setLastLoginDate(Date lastLoginDate) {
 		this.lastLoginDate = lastLoginDate;
-	}
-
-	public Date getLastLoginDateDisplay() {
-		return lastLoginDateDisplay;
-	}
-
-	public void setLastLoginDateDisplay(Date lastLoginDateDisplay) {
-		this.lastLoginDateDisplay = lastLoginDateDisplay;
 	}
 
 	public Date getJoinDate() {

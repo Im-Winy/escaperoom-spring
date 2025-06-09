@@ -7,15 +7,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.escaperoom.escaperoom.service.UserService;
+
 public class LoginAttemptAuthenticationProvider implements AuthenticationProvider {
 
-	private final UserDetailsService userDetailsService;
+	private final UserService userService;
 	private final LoginAttemptService loginAttemptService;
 	private final PasswordEncoder passwordEncoder;
 
-	public LoginAttemptAuthenticationProvider(UserDetailsService userDetailsService,
-			LoginAttemptService loginAttemptService, PasswordEncoder passwordEncoder) {
-		this.userDetailsService = userDetailsService;
+	public LoginAttemptAuthenticationProvider(UserService userService, LoginAttemptService loginAttemptService, PasswordEncoder passwordEncoder) {
+		this.userService = userService;
 		this.loginAttemptService = loginAttemptService;
 		this.passwordEncoder = passwordEncoder;
 	}
@@ -26,17 +27,16 @@ public class LoginAttemptAuthenticationProvider implements AuthenticationProvide
 		String presentedPassword = authentication.getCredentials().toString();
 
 		if (loginAttemptService.isBlocked(username)) {
-			throw new LockedException("Compte bloqué après trop de tentatives");
+			throw new LockedException("Compte bloqué");
 		}
 
-		UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+		UserDetails userDetails = userService.loadUserByUsername(username); // cohérence ici
 
 		if (!passwordEncoder.matches(presentedPassword, userDetails.getPassword())) {
 			loginAttemptService.loginFailed(username);
 			throw new BadCredentialsException("Mot de passe incorrect");
 		}
 
-		// Connexion réussie, on reset le compteur et déverrouille si besoin
 		loginAttemptService.loginSucceeded(username);
 
 		return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

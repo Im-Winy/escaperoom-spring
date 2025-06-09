@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		// Vérifie que le token est bien présent, que l'utilisateur n'est pas encore authentifié
 		if (StringUtils.isNotEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-			UserDetails userDetails = userService.userDetailsService().loadUserByUsername(username); // Charge l’utilisateur
+			UserDetails userDetails = userService.loadUserByUsername(username); // Charge l’utilisateur
 
 			// Vérifie si le token est valide pour cet utilisateur
 			if (jwtService.isTokenValid(jwt, userDetails)) {

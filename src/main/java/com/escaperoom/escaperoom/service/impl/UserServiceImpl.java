@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,7 +31,7 @@ import java.util.List;
 @Service
 @Transactional
 @Qualifier("UserDetailsService")
-public class UserServiceImpl implements UserService, UserDetailsService {
+public class UserServiceImpl implements UserService {
 
 	@Autowired
 	IUserRepository userRepository;
@@ -48,20 +49,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	// Charge un utilisateur par son nom d'utilisateur pour l'authentification
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = userRepository.findUserByUsername(username);
-		if (user == null)
-			throw new UsernameNotFoundException("Utilisateur non trouvé");
-
-		if (loginAttemptService.isBlocked(username)) {
-			user.setNotLocked(false);
-			userRepository.save(user); // Persister le blocage
-		}
-
-		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
-				user.isEnabled(), true, // accountNonExpired
-				true, // credentialsNonExpired
-				user.isNotLocked(), // accountNonLocked
-				user.getAuthorities());
+	    if (loginAttemptService.isBlocked(username)) {
+	        throw new LockedException("Compte bloqué");
+	    }
+	    User user = userRepository.findUserByUsername(username);
+	    if (user == null) {
+	        throw new UsernameNotFoundException("Utilisateur non trouvé");
+	    }
+	    return user;
 	}
 
 	// À appeler dans la méthode d’authentification custom quand la connexion échoue
@@ -80,20 +75,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		}
 	}
 
-	// Retourne un service interne pour charger les utilisateurs
-	// (Méthode redondante avec loadUserByUsername principale)
-	@Override
-	public UserDetailsService userDetailsService() {
-
-		return new UserDetailsService() {
-
-			@Override
-			public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-				return userRepository.findUserByUsername(username);
-			}
-		};
-	}
 
 	// Enregistre un nouvel utilisateur avec un mot de passe généré
 	@Override
